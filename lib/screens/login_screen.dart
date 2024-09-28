@@ -1,12 +1,10 @@
 // ignore_for_file: use_build_context_synchronously
-
-import 'package:studentsregistration/screens/home_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-import '../main.dart';
-
+import 'package:studentsregistration/screens/home_screen.dart';
+import 'package:studentsregistration/screens/sign_up.dart';
+import 'package:studentsregistration/services/auth_service.dart';
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
 
@@ -15,11 +13,17 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _nameController = TextEditingController();
-  final _passwordController = TextEditingController();
+  final nameController = TextEditingController();
+  final passwordController = TextEditingController();
+  final emailController = TextEditingController();
 
   final formkey = GlobalKey<FormState>();
   bool obscure = true;
+  bool obscurepass = true;
+  String email="";
+  String password="";
+  String fullname="";
+  bool login = false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -49,7 +53,7 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
+                  login?SizedBox(height: 10,):  Row(
                     children: [
                       Image.asset("assets/images/splash.png",width: 50,height: 50,),
                       const SizedBox(width: 10,),
@@ -57,50 +61,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     ],
                   ),
                   const SizedBox(
-                    height: 30,
-                  ),
-                  TextFormField(
-                    style: const TextStyle(
-                      fontSize: 15.0,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Courier',
-                    ),
-                    controller: _nameController,
-                    keyboardType: TextInputType.name,
-                    decoration: const InputDecoration(
-                      labelText: 'Enter Your Name',
-                      labelStyle: TextStyle(
-                        color:Colors.black,
-                      ),
-                      fillColor: Colors.grey,
-                      border: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.grey, width: 2)),
-                      errorBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.red, width: 2)),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.grey, width: 2),
-                      ),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return "Please Enter Your Name";
-                      } else {
-                        return null;
-                      }
-                    },
-                  ),
-                  const SizedBox(
                     height: 20,
                   ),
-                  TextFormField(
+                  TextFormField(key: const ValueKey("email"),
                     style: const TextStyle(
                       fontSize: 15.0,
                       fontWeight: FontWeight.bold,
-                      fontFamily: 'Courier',
                     ),
-                    controller: _passwordController,
+                    controller: emailController,
                     obscureText: obscure,
-                    keyboardType: TextInputType.visiblePassword,
+                    keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
                       suffixIcon: IconButton(
                           onPressed: () {
@@ -110,11 +80,59 @@ class _LoginScreenState extends State<LoginScreen> {
                           },
                           icon: obscure
                               ?const Icon(Icons.visibility_outlined,
-                                  color: Colors.black,)
+                            color: Colors.black,)
                               :const Icon(
-                                  Icons.visibility_off_outlined,
-                                  color:Colors.black,
-                                )),
+                            Icons.visibility_off_outlined,
+                            color:Colors.black,
+                          )),
+                      labelText: "Enter Your Email",
+                      labelStyle:const TextStyle(color: Colors.black,),
+                      border: const OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.grey, width: 2)),
+                      errorBorder:const OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.red, width: 2),
+                      ),
+                      focusedBorder:const OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey, width: 2),
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return "Please Enter Your Email";
+                      } else {
+                        return null;
+                      }
+                    },onSaved: (value){
+                      setState(() {
+                        email=value!;
+                      });
+                    },
+                  ),
+                  const SizedBox(
+                    height: 30,
+                  ),
+                  TextFormField(key: const ValueKey("password"),
+                    style: const TextStyle(
+                      fontSize: 15.0,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    controller: passwordController,
+                    obscureText: obscurepass,
+                    keyboardType: TextInputType.visiblePassword,
+                    decoration: InputDecoration(
+                      suffixIcon: IconButton(
+                          onPressed: () {
+                            setState(() {
+                              obscurepass = !obscurepass;
+                            });
+                          },
+                          icon: obscurepass
+                              ?const Icon(Icons.visibility_outlined,
+                            color: Colors.black,)
+                              :const Icon(
+                            Icons.visibility_off_outlined,
+                            color:Colors.black,
+                          )),
                       labelText: "Enter Your Password",
                       labelStyle:const TextStyle(color: Colors.black,),
                       border: const OutlineInputBorder(
@@ -132,14 +150,25 @@ class _LoginScreenState extends State<LoginScreen> {
                       } else {
                         return null;
                       }
+                    },onSaved: (value){
+                      setState(() {
+                        password=value!;
+                      });
                     },
                   ),
+
                   const Spacer(),
                   Center(
                     child: ElevatedButton(
-                      onPressed: () {
+                      onPressed: () async{
                         if (formkey.currentState!.validate()) {
-                          checkLogIn(context);
+                          // checkLogIn(context);
+                          formkey.currentState!.save();
+                          await FirebaseAuth.instance.setPersistence(Persistence.LOCAL);
+                        AuthServices.signinUser(email,password,context);
+                          Navigator.push(context, MaterialPageRoute(builder: (ctx){
+                            return HomePage();
+                          }));
                         } else {
                            if (kDebugMode) {
                              print("Data Empty");
@@ -159,7 +188,17 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: const Text("LogIn",style: TextStyle(color: Colors.white),),
                     ),
                   ),
-                  const SizedBox(height: 30,)
+                  const SizedBox(height: 30,),
+                  Row(mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text("Don't have an account?"),
+                     TextButton(onPressed: (){
+                       Navigator.push(context, MaterialPageRoute(builder: (ctx){
+                         return SignUp();
+                       }));
+                     }, child: Text("SignUp"))
+                    ],
+                  )
                 ],
               ),
           ),
@@ -169,37 +208,5 @@ class _LoginScreenState extends State<LoginScreen> {
 
       ),
     );
-  }
-
-  void checkLogIn(BuildContext ctx) async {
-    final username = _nameController.text;
-    final password = _passwordController.text;
-    if (username == "Anuja" && password == "anuja@gmail.com") {
-//go to home
-      if (kDebugMode) {
-        print("User name and password correct");
-      }
-      final sharedprfs = await SharedPreferences.getInstance();
-      await sharedprfs.setBool(save_Key, true);
-
-      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (ctx1) {
-        return const HomePage();
-      }));
-    } else {
-      if (kDebugMode) {
-        print("User name and password doesn't match");
-      }
-      //snackBar
-      const errorMessage = "User name or password is incorrect";
-
-      ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(
-          behavior: SnackBarBehavior.floating,
-          backgroundColor: Colors.red,
-          duration: Duration(seconds: 5),
-          margin: EdgeInsets.all(15.0),
-          content: Text(errorMessage)
-      )
-      );
-    }
   }
 }

@@ -1,13 +1,10 @@
-// ignore_for_file: avoid_types_as_parameter_names
-
-import 'dart:io';
-
-import 'package:studentsregistration/screens/user_detail.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/user.dart';
-import '../utils/database_helper.dart';
-import 'edit_user_details.dart';
+import 'package:studentsregistration/screens/edit_user_details.dart';
+import 'package:studentsregistration/screens/user_detail.dart';
 import 'login_screen.dart';
 
 class HomePage extends StatefulWidget {
@@ -18,69 +15,86 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  DatabaseHelper databaseHelper = DatabaseHelper();
-  List<User> userList = [];
+  // List<User> userList = [];
   int count = 0;
   bool isPress = true;
-TextEditingController  textControl=TextEditingController();
+  TextEditingController textControl = TextEditingController();
   @override
   void initState() {
     updateListView();
     super.initState();
   }
-      @override
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Students",style: TextStyle(color: Colors.white),),
+        title: const Text(
+          "Students",
+          style: TextStyle(color: Colors.white),
+        ),
         backgroundColor: Colors.black,
         actions: [
-          IconButton(onPressed: () {
-            setState(() {
-              isPress=!isPress;
-            });
-          }, icon:isPress? const Icon(Icons.grid_4x4_outlined,color: Colors.white,): const Icon(
-              Icons.list_alt_outlined,color: Colors.white
-          )
-          ),
           IconButton(
-            onPressed: () {
-              logout(context);
+              onPressed: () {
+                setState(() {
+                  isPress = !isPress;
+                });
+              },
+              icon: isPress
+                  ? const Icon(
+                      Icons.grid_4x4_outlined,
+                      color: Colors.white,
+                    )
+                  : const Icon(Icons.list_alt_outlined, color: Colors.white)),
+          IconButton(
+            onPressed: () async{
+             await FirebaseAuth.instance.signOut();
             },
-            icon: const Icon(Icons.logout,color: Colors.white),
+            icon: const Icon(Icons.logout, color: Colors.white),
           ),
         ],
-        bottom: PreferredSize(preferredSize: const Size.fromHeight(60.0), child: Padding(padding: const EdgeInsets.symmetric(vertical: 10,horizontal: 10),
-          child: TextField(controller: textControl,
-        onChanged: (value){
-          if(value.isNotEmpty)
-          {
-            var userListFuture = databaseHelper.getUserList();
-            // ignore: non_constant_identifier_names
-            userListFuture.then((List) {
-              setState(() {
-                userList = List.where((element) => element.name!.toUpperCase().contains(textControl.text.toUpperCase())).toList();
-                count = userList.length;
-              });
-            });
-          }
-          else{
-            updateListView();
-          }
-        },
-            style: const TextStyle(color: Colors.white),
-        decoration: const InputDecoration(
-          hintText: 'Search...',
-          border: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.grey, width: 2),
-          ),
-          focusedBorder:OutlineInputBorder(
-        borderSide: BorderSide(color: Colors.grey, width: 2,),
-          ),
-          prefixIcon: Icon(Icons.search,color: Colors.white,),
-        ),
-        ),
-        )),
+        bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(60.0),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+              child: TextField(
+                controller: textControl,
+                onChanged: (value) {
+                  if (value.isNotEmpty) {
+                    // var userListFuture = databaseHelper.getUserList();
+                    // ignore: non_constant_identifier_names
+                    // userListFuture.then((List) {
+                    //   setState(() {
+                    //     userList = List.where((element) => element.name!
+                    //         .toUpperCase()
+                    //         .contains(textControl.text.toUpperCase())).toList();
+                    //     count = userList.length;
+                    //   });
+                    // });
+                  } else {
+                    updateListView();
+                  }
+                },
+                style: const TextStyle(color: Colors.white),
+                decoration: const InputDecoration(
+                  hintText: 'Search...',
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey, width: 2),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Colors.grey,
+                      width: 2,
+                    ),
+                  ),
+                  prefixIcon: Icon(
+                    Icons.search,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            )),
       ),
       body: Stack(
         children: [
@@ -93,17 +107,23 @@ TextEditingController  textControl=TextEditingController();
                 "assets/images/background.jpeg",
                 fit: BoxFit.fill,
               )),
-
-
-       userList.isEmpty?const Center(child: Text("NO STUDENTS AVAILABLE",style: TextStyle(color: Colors.black),)) :isPress?    getUsersListView():getUserGridView()
-
+          // userList.isEmpty
+          //     ? const Center(
+          //         child: Text(
+          //         "NO STUDENTS AVAILABLE",
+          //         style: TextStyle(color: Colors.black),
+          //       ))
+          //     :
+          isPress ? getUsersListView() : getUserGridView()
         ],
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
         onPressed: () {
-          navigateToDetail(User('', '', null, null, '', null), 'Add Student');
+          Navigator.push(context, MaterialPageRoute(builder: (ctx) {
+            return UserDetailsEdit("Add Student", documentSnapshot: null,);
+          }));
         },
         tooltip: 'Add Student',
         child: const Icon(Icons.add),
@@ -111,203 +131,212 @@ TextEditingController  textControl=TextEditingController();
     );
   }
 
- ListView  getUsersListView() {
-    return ListView.builder(
-      physics: const ScrollPhysics(),
-      scrollDirection: Axis.vertical,
-
-      itemCount: count,
-      itemBuilder: (BuildContext context, int position) {
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 18,horizontal: 15),
-          child: Card(
-            color: Colors.transparent,
-            elevation: 2.0,
-            child: ListTile(
-
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              leading: CircleAvatar(
-                backgroundColor: Colors.black,
-                radius: 25,
-                child: userList[position].imagePath != null
-                    ? SizedBox(
-                        width: 50,
-                        height: 50,
-                        child: ClipRRect(
-                            borderRadius: BorderRadius.circular(25),
-                            clipBehavior: Clip.antiAliasWithSaveLayer,
-                            child: Image.file(
-                              File(
-                                userList[position].imagePath!,
-                              ),
-                              fit: BoxFit.cover,
-                            )),
-                      )
-                    : const Icon(Icons.person,color: Colors.white),
-              ),
-              title: Text(
-                userList[position].name!,
-                style: const TextStyle(color: Colors.black),
-              ),
-              subtitle: Text(userList[position].qualification!),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.edit, color: Colors.black54),
-                    onPressed: () {
-                      navigateToDetail(userList[position], 'Edit User');
-                    },
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.black54),
-                    onPressed: () {
-                      showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: const Text("Delete...?"),
-                              content: Text(
-                                  "Are you sure? ${userList[position].name} will be deleted?"),
-                              actions: [
-                                TextButton(
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                    },
-                                    child: const Text("Cancel")),
-                                TextButton(
-                                    onPressed: () {
-                                      _delete(context, userList[position]);
-                                      Navigator.of(context).pop();
-                                    },
-                                    child: const Text("Delete")),
-                              ],
-                            );
-                          });
-                    },
-                  ),
-                ],
-              ),
-              onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => UserDetails(userList[position])));
-              },
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  GridView getUserGridView() {
-    return GridView.builder(padding: const EdgeInsets.symmetric(horizontal: 10,vertical: 10),
-        physics: const ScrollPhysics(),
-        scrollDirection: Axis.vertical,
-        itemCount: count,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          mainAxisSpacing: 10.0,
-          crossAxisSpacing: 10.0,
-          childAspectRatio: 0.75,
-        ),
-        itemBuilder: (BuildContext context, int position) {
-          return InkWell(
-            onTap:() {
-            Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => UserDetails(userList[position])));
-          },
-            child: Card(shape:RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              color: Colors.transparent,
-              elevation: 2.0,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20,vertical: 20),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      CircleAvatar(
+  StreamBuilder<QuerySnapshot> getUsersListView() {
+    return StreamBuilder(
+        stream: FirebaseFirestore.instance.collection("Students").snapshots(),
+        builder: (ctx, AsyncSnapshot<QuerySnapshot> snapshot) {
+          if (snapshot.hasData) {
+            return ListView.builder(
+              physics: const ScrollPhysics(),
+              scrollDirection: Axis.vertical,
+              itemCount: snapshot.data!.docs.length,
+              itemBuilder: (BuildContext context, int position) {
+                DocumentSnapshot documentSnapshot= snapshot.data!.docs[position];
+                return Padding(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 18, horizontal: 15),
+                  child: Card(
+                    color: Colors.transparent,
+                    elevation: 2.0,
+                    child: ListTile(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20)),
+                      leading: const CircleAvatar(
                         backgroundColor: Colors.black,
-                        radius: 35,
-                        child: userList[position].imagePath != null
-                            ? SizedBox(
-                          width: 80,
-                          height: 80,
-                          child: ClipRRect(
-                              borderRadius: BorderRadius.circular(39),
-                              clipBehavior: Clip.antiAliasWithSaveLayer,
-                              child: Image.file(
-                                File(
-                                  userList[position].imagePath!,
-                                ),
-                                fit: BoxFit.cover,
-                              )),
-                        )
-                            : const Icon(Icons.person,color: Colors.white),
+                        radius: 25,
+                        child: Icon(Icons.person, color: Colors.white),
                       ),
-                      const SizedBox(height: 20,),
-                      Text(
-                        userList[position].name!,
-                        style: const TextStyle(color: Colors.black,fontSize: 18),
+                      title: Text(
+                        documentSnapshot["studentName"],
+                        style: const TextStyle(color: Colors.black),
                       ),
-                      const SizedBox(height: 20,),
-                      Text(
-                        userList[position].qualification!,
-                        style: const TextStyle(color: Colors.black54,fontSize: 15),
-                      ),
-                      const Spacer(),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      subtitle: Text(documentSnapshot["studyProgram"]),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit, color: Colors.black54),
-                          onPressed: () {
-                            navigateToDetail(userList[position], 'Edit User');
-                          },
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.black54),
-                          onPressed: () {
-                            showDialog(
+                          IconButton(
+                            icon: const Icon(Icons.edit, color: Colors.black54),
+                            onPressed: () {
+                              navigateToDetail('Edit User',documentSnapshot:  documentSnapshot);
+                            },
+                          ),
+                          IconButton(
+                            icon:
+                                const Icon(Icons.delete, color: Colors.black54),
+                            onPressed: () {
+                              showDialog(
                                 context: context,
                                 builder: (BuildContext context) {
                                   return AlertDialog(
                                     title: const Text("Delete...?"),
-                                    content: Text(
-                                        "Are you sure? ${userList[position].name} will be deleted?"),
+                                    content: const Text("Are you sure? This will be deleted."),
                                     actions: [
                                       TextButton(
-                                          onPressed: () {
-                                            Navigator.of(context).pop();
-                                          },
-                                          child: const Text("Cancel")),
+                                        onPressed: () {
+                                          Navigator.of(context).pop(); // Dismiss dialog
+                                        },
+                                        child: const Text("Cancel"),
+                                      ),
                                       TextButton(
-                                          onPressed: () {
-                                            _delete(context, userList[position]);
-                                            Navigator.of(context).pop();
-                                          },
-                                          child: const Text("Delete")),
+                                        onPressed: () {
+                                          _delete(context, name: documentSnapshot["studentName"]);
+                                          Navigator.of(context).pop(); // Dismiss dialog after deletion
+                                        },
+                                        child: const Text("Delete"),
+                                      ),
                                     ],
                                   );
-                                });
-                          },
-                        ),
-                      ],)
-                    ],
+                                },
+                              );
+                            },
+
+                          ),
+                        ],
+                      ),
+                      onTap: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => UserDetails(documentSnapshot)));
+                      },
+                    ),
                   ),
-                ),
-
-              ),
-
-          );
+                );
+              },
+            );
+          }
+          else{
+        return    const CircularProgressIndicator();
+          }
         });
   }
 
-  void navigateToDetail(User user, String title) async {
+  StreamBuilder<QuerySnapshot> getUserGridView() {
+    return StreamBuilder(
+        stream: FirebaseFirestore.instance.collection("Students").snapshots(),
+        builder: (ctx, AsyncSnapshot<QuerySnapshot> snapshot) {
+
+          if (snapshot.hasData) {
+             return GridView.builder(
+
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                physics: const ScrollPhysics(),
+                scrollDirection: Axis.vertical,
+                itemCount: count,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 10.0,
+                  crossAxisSpacing: 10.0,
+                  childAspectRatio: 0.75,
+                ),
+                itemBuilder: (BuildContext context, int position) {
+                  DocumentSnapshot documentSnapshot= snapshot.data!.docs[position];
+                  return InkWell(
+                    onTap: () {
+                      // Navigator.of(context).push(MaterialPageRoute(
+                      //     builder: (context) => UserDetails(userList[position])));
+                    },
+                    child: Card(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20)),
+                      color: Colors.transparent,
+                      elevation: 2.0,
+                      child: Padding(
+                        padding:
+                        const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const CircleAvatar(
+                              backgroundColor: Colors.black,
+                              radius: 35,
+                              child: Icon(Icons.person, color: Colors.white),
+                            ),
+                            const SizedBox(
+                              height: 20,
+                            ),
+                            Text(
+                              documentSnapshot["studentName"],
+                              style: const TextStyle(color: Colors.black, fontSize: 18),
+                            ),
+                            const SizedBox(
+                              height: 20,
+                            ),
+                            Text(
+                              documentSnapshot["studyProgram"],
+                              style:
+                              const TextStyle(color: Colors.black54, fontSize: 15),
+                            ),
+                            const Spacer(),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.edit, color: Colors.black54),
+                                  onPressed: () {
+                                   navigateToDetail(documentSnapshot:documentSnapshot , 'Edit User', );
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete, color: Colors.black54),
+                                  onPressed: () {
+                                    showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return AlertDialog(
+                                            title: const Text("Delete...?"),
+                                            content:
+                                            const Text("Are you sure?  will be deleted?"),
+                                            actions: [
+                                              TextButton(
+                                                  onPressed: () {
+                                                    Navigator.of(context).pop();
+                                                  },
+                                                  child: const Text("Cancel")),
+                                              TextButton(
+                                                  onPressed: () {
+                                                    // _delete(
+                                                    //     context, userList[position]);
+                                                    Navigator.of(context).pop();
+                                                  },
+                                                  child: const Text("Delete")),
+                                            ],
+                                          );
+                                        });
+                                  },
+                                ),
+                              ],
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                });
+          }
+          else{
+            return    const CircularProgressIndicator();
+          }
+        });
+
+
+  }
+
+  void navigateToDetail(String title, {required documentSnapshot}) async {
     bool result = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => UserDetailsEdit(user, title),
+        builder: (context) => UserDetailsEdit( documentSnapshot:documentSnapshot,title ),
       ),
     );
     if (result) {
@@ -315,13 +344,23 @@ TextEditingController  textControl=TextEditingController();
     }
   }
 
-  void _delete(BuildContext context, User user) async {
-    int result = await databaseHelper.deleteUser(user.id!);
-    if (result != 0) {
-      // ignore: use_build_context_synchronously
+
+  void _delete(
+    BuildContext context, {required String name}
+  ) async {
+    DocumentReference documentReference = FirebaseFirestore
+        .instance
+        .collection("Students")
+        .doc(name);
+    try {
       showSnackbar(context, 'User Deleted Successfully');
+      await documentReference.delete();
+
       updateListView();
+    } catch (e) {
+      showSnackbar(context, 'Error deleting user: $e');
     }
+
   }
 
   void showSnackbar(BuildContext context, String message) {
@@ -330,12 +369,8 @@ TextEditingController  textControl=TextEditingController();
   }
 
   void updateListView() async {
-    var userListFuture = databaseHelper.getUserList();
-    userListFuture.then((userList) {
-      setState(() {
-        this.userList = userList;
-        count = userList.length;
-      });
+    setState(() {
+
     });
   }
 
@@ -368,5 +403,4 @@ TextEditingController  textControl=TextEditingController();
           );
         });
   }
-
 }

@@ -1,29 +1,22 @@
-import 'package:flutter/foundation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import '../models/user.dart';
-import '../utils/database_helper.dart';
+
+import 'package:studentsregistration/screens/home_screen.dart';
 
 class UserDetailsEdit extends StatefulWidget {
-  final User user;
   final String appBarTitle;
+  final documentSnapshot;
 
-  const UserDetailsEdit(this.user, this.appBarTitle, {super.key});
+   UserDetailsEdit(this.appBarTitle,  {required this.documentSnapshot,});
 
   @override
   State<StatefulWidget> createState() {
-    // ignore: no_logic_in_create_state
-    return UserDetailsEditState(user, appBarTitle);
+    return UserDetailsEditState();
   }
 }
 
 class UserDetailsEditState extends State<UserDetailsEdit> {
-  DatabaseHelper helper = DatabaseHelper();
-  final ImagePicker _picker = ImagePicker();
-  String appBarTitle;
-  User user;
-
   TextEditingController nameController = TextEditingController();
   TextEditingController qualificationController = TextEditingController();
   TextEditingController ageController = TextEditingController();
@@ -31,56 +24,44 @@ class UserDetailsEditState extends State<UserDetailsEdit> {
   TextEditingController descriptionController = TextEditingController();
   String? _imagePath;
   final formKey = GlobalKey<FormState>();
-
-  UserDetailsEditState(this.user, this.appBarTitle);
-
-  @override
+@override
   void initState() {
-    super.initState();
-    nameController.text = user.name ?? '';
-    qualificationController.text = user.qualification ?? '';
-    ageController.text = user.age?.toString() ?? '';
-    phoneController.text = user.phone?.toString() ?? '';
-    descriptionController.text = user.description ?? '';
-    _imagePath = user.imagePath;
+  if(widget.appBarTitle=="Edit User"){
+    nameController.text=widget.documentSnapshot["studentName"];
+    qualificationController.text=widget.documentSnapshot["studyProgram"];
+    descriptionController.text=widget.documentSnapshot["studentId"];
+    ageController.text=widget.documentSnapshot["age"];
+    phoneController.text=widget.documentSnapshot["phone"];
+
   }
 
+  super.initState();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(appBarTitle,style: const TextStyle(color: Colors.white),),
+        title: Text(widget.appBarTitle,
+            style: const TextStyle(color: Colors.white)),
         backgroundColor: Colors.black,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back,color: Colors.white),
-          onPressed: () {
-            moveToLastScreen();
-          },
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: moveToLastScreen,
         ),
       ),
       body: Stack(
         children: [
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
+          Positioned.fill(
             child: Image.asset(
               "assets/images/background.jpeg",
               fit: BoxFit.fill,
             ),
           ),
-          Positioned(
-            top: 15,
-            left: 15,
-            right: 15,
-            bottom: 15,
+          Positioned.fill(
             child: Form(
               key: formKey,
               child: ListView(
-                physics: const ScrollPhysics(),
-                shrinkWrap: true,
-                scrollDirection: Axis.vertical,
+                padding: const EdgeInsets.symmetric(horizontal: 30),
                 children: <Widget>[
                   InkWell(
                     child: CircleAvatar(
@@ -88,63 +69,98 @@ class UserDetailsEditState extends State<UserDetailsEdit> {
                       radius: 50,
                       child: _imagePath != null
                           ? SizedBox(
-                        width: 100,
-                        height: 100,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(50),
-                          clipBehavior: Clip.antiAliasWithSaveLayer,
-                          child: Image.file(
-                            File(_imagePath!),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      )
-                          : const Icon(
-                        Icons.camera_alt_outlined,
-                        color: Colors.white,
-                      ),
+                              width: 100,
+                              height: 100,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(50),
+                                child: Image.file(
+                                  File(_imagePath!),
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            )
+                          : const Icon(Icons.camera_alt_outlined,
+                              color: Colors.white),
                     ),
-                    onTap: () async {
-                      final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-                      if (pickedFile != null) {
-                        setState(() {
-                          _imagePath = pickedFile.path;
-                        });
-                      }
+                    onTap: () {
+                      // Add functionality to pick image
                     },
                   ),
-                  buildTextFormField(nameController, 'Name', updateName),
-                  buildTextFormField(qualificationController, 'Qualification', updateQualification),
-                  buildTextFormField(ageController, 'Age', updateAge, keyboardType: TextInputType.number),
-                  buildTextFormField(phoneController, 'Phone', updatePhone, keyboardType: TextInputType.number),
-                  buildTextFormField(descriptionController, 'Description', updateDescription),
-                  const SizedBox(height: 55,),
+                  buildTextFormField(nameController, 'Name'),
+                  buildTextFormField(
+                      descriptionController, 'Student ID'),
+                  buildTextFormField(qualificationController, 'Study Program',
+                      ),
+                  buildTextFormField(ageController, 'Age',
+                      keyboardType: TextInputType.number),
+                  buildTextFormField(phoneController, 'Phone',
+                      keyboardType: TextInputType.number),
+                  const SizedBox(height: 55),
                 ],
               ),
             ),
           ),
           Positioned(
-            bottom: 19,
-            left: 10,
-            right: 10,
-            child: ElevatedButton(
-              style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all(Colors.black),
-                foregroundColor: MaterialStateProperty.all(Colors.white),
+            bottom: 20,
+            left: 20,
+            right: 20,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 15, horizontal: 20),
+                  ),
+                  onPressed: () async {
+                    if (formKey.currentState!.validate()) {
+                      DocumentReference documentReference = FirebaseFirestore
+                          .instance
+                          .collection("Students")
+                          .doc(nameController.text);
 
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-                child: Text(
-                  appBarTitle == 'Add Student' ? 'Save Student' :'Update Student' ,
-                  style: const TextStyle(fontSize: 18.0),
+                      Map<String, dynamic> student = {
+                        "studentName": nameController.text,
+                        "studentId": descriptionController.text,
+                        "studyProgram": qualificationController.text,
+                        "age": ageController.text,
+                        "phone": phoneController.text,
+                      };
+
+                     if(widget.appBarTitle=="Edit User"){
+                       try {
+                         await FirebaseFirestore
+                             .instance
+                             .collection("Students")
+                             .doc(widget.documentSnapshot["studentName"]).delete();
+                         await documentReference.set(student).whenComplete(() {
+                           print("Student data saved");
+                         });
+                       } catch (e) {
+                         print("Error: $e");
+                       }
+                     }
+                     else{
+                       try {
+                         await documentReference.set(student).whenComplete(() {
+                           print("Student data updated");
+                         });
+                       } catch (e) {
+                         print("Error: $e");
+                       }
+                     }
+
+                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx){
+                        return HomePage();
+                      }));
+                    }
+                  },
+                  child: Text(widget.appBarTitle == 'Add Student'
+                      ? 'Save Student'
+                      : 'Update Student'),
                 ),
-              ),
-              onPressed: () {
-                if (formKey.currentState!.validate()) {
-                  _save();
-                }
-              },
+              ],
             ),
           ),
         ],
@@ -153,19 +169,16 @@ class UserDetailsEditState extends State<UserDetailsEdit> {
   }
 
   Widget buildTextFormField(
-      TextEditingController controller,
-      String label,
-      Function onChanged, {
-        TextInputType keyboardType = TextInputType.text,
-      }) {
+      TextEditingController controller, String label,
+      {TextInputType keyboardType = TextInputType.text}) {
     return Padding(
-      padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
+      padding: const EdgeInsets.symmetric(vertical: 15),
       child: TextFormField(
         controller: controller,
         style: const TextStyle(fontSize: 18.0),
         keyboardType: keyboardType,
         onChanged: (value) {
-          onChanged();
+
         },
         decoration: InputDecoration(
           labelText: label,
@@ -174,61 +187,36 @@ class UserDetailsEditState extends State<UserDetailsEdit> {
           border: const OutlineInputBorder(
             borderSide: BorderSide(color: Colors.grey, width: 2),
           ),
-          errorBorder: const OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.red, width: 2),
-          ),
           focusedBorder: const OutlineInputBorder(
             borderSide: BorderSide(color: Colors.grey, width: 2),
           ),
         ),
         validator: (value) {
-    if (value == null || value.isEmpty) {
-    return "Please Enter $label";
-    }
-    if (label == 'Phone' && !RegExp(r'^\d{10}$').hasMatch(value)) {
-    return "Phone number must be 10 digits";
-    }
-    if (label == 'Age' && !RegExp(r'^\d{1,3}$').hasMatch(value)) {
-    return "Age must be at most 3 digits";
-    }
-    return null;
-    },
+          if (value == null || value.isEmpty) {
+            return "Please enter $label";
+          }
+          if (label == 'Phone' && !RegExp(r'^\d{10}$').hasMatch(value)) {
+            return "Phone number must be 10 digits";
+          }
+          if (label == 'Age' && !RegExp(r'^\d{1,3}$').hasMatch(value)) {
+            return "Age must be a valid number";
+          }
+          return null;
+        },
       ),
     );
   }
 
   void updateName() {
-    user.name = nameController.text;
-  }
+     }
 
-  void updateQualification() {
-    user.qualification = qualificationController.text;
-  }
+  void updateQualification() {}
 
-  void updateAge() {
-    user.age = int.parse(ageController.text);
-  }
+  void updateAge() {}
 
-  void updatePhone() {
-    user.phone = int.parse(phoneController.text);
-  }
+  void updatePhone() {}
 
-  void updateDescription() {
-    user.description = descriptionController.text;
-  }
-
-  void _save() async {
-    moveToLastScreen();
-    user.imagePath = _imagePath;
-    if (kDebugMode) {
-      print(user.imagePath);
-    }
-    if (appBarTitle == 'Add Student') {
-      await helper.insertUser(user);
-    } else {
-      await helper.updateUser(user);
-    }
-  }
+  void updateDescription() {}
 
   void moveToLastScreen() {
     Navigator.pop(context, true);

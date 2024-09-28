@@ -28,6 +28,7 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  cloud_firestore:
   flutter:
     sdk: flutter
 
@@ -36,11 +37,12 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
   shared_preferences: ^2.2.3
-  sqflite: ^2.3.2
   path_provider: ^2.1.3
   intl: ^0.19.0
-  image_picker: any
   win32: ^5.2.0
+  firebase_auth:
+  firebase_core: ^3.5.0
+  firebase_storage:
 
 dev_dependencies:
   flutter_test:

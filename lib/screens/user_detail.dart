@@ -2,22 +2,28 @@
 
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:studentsregistration/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:studentsregistration/models/user.dart';
 import 'package:studentsregistration/screens/edit_user_details.dart';
 import 'package:studentsregistration/utils/database_helper.dart';
 
-class UserDetails extends StatelessWidget {
-  final User user;
+class UserDetails extends StatefulWidget {
+  final documentSnapshot;
 
-  const UserDetails(this.user, {super.key});
+  const UserDetails(this.documentSnapshot , {super.key,});
 
+  @override
+  State<UserDetails> createState() => _UserDetailsState();
+}
+
+class _UserDetailsState extends State<UserDetails> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(user.name!,style: const TextStyle(color: Colors.white),),
+        title: Text(widget.documentSnapshot["studentName"],style: const TextStyle(color: Colors.white),),
         backgroundColor: Colors.black,
       ),
       body: Stack(
@@ -35,15 +41,8 @@ class UserDetails extends StatelessWidget {
             child:   CircleAvatar(
               backgroundColor: Colors.black,
               radius: 50,
-              child: user.imagePath != null
-                  ? SizedBox(width:100,height: 100,
-
-                child: ClipRRect(
-                    borderRadius: BorderRadius.circular(100),
-                    clipBehavior: Clip.antiAliasWithSaveLayer,
-                    child: Image.file(File(user.imagePath!,),fit: BoxFit.cover,)),
-              )
-                  : const Icon(Icons.person,color: Colors.white),
+              child:
+                  const Icon(Icons.person,color: Colors.white),
 
             ),),
           Positioned(
@@ -59,16 +58,23 @@ class UserDetails extends StatelessWidget {
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  user.name.toString(),
+                  widget.documentSnapshot["studentName"],
                   style: const TextStyle(fontSize: 16),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 16), const Text(
+                  'Id:',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  widget.documentSnapshot["studentId"],
+                  style: const TextStyle(fontSize: 16),
+                ),   const SizedBox(height: 16),
                 const Text(
                   'Qualification:',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  user.qualification.toString(),
+                  widget.documentSnapshot["studyProgram"],
                   style: const TextStyle(fontSize: 16),
                 ),
                 const SizedBox(height: 16),
@@ -77,7 +83,7 @@ class UserDetails extends StatelessWidget {
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  user.age.toString(),
+                  widget.documentSnapshot["age"],
                   style: const TextStyle(fontSize: 16),
                 ),
                 const SizedBox(height: 16),
@@ -86,18 +92,11 @@ class UserDetails extends StatelessWidget {
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  user.phone.toString(),
+                  widget.documentSnapshot["phone"],
                   style: const TextStyle(fontSize: 16),
                 ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Description:',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  user.description.toString(),
-                  style: const TextStyle(fontSize: 16),
-                ),
+
+
               ],
             ),
           ),
@@ -112,10 +111,10 @@ class UserDetails extends StatelessWidget {
               ElevatedButton(
 
                 onPressed: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-
-                    builder: (context) => UserDetailsEdit(user, "Edit User"),
-                  ));
+                  // Navigator.of(context).push(MaterialPageRoute(
+                  //
+                  //   builder: (context) => UserDetailsEdit("user", "Edit User"),
+                  // ));
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.black,
@@ -136,7 +135,7 @@ class UserDetails extends StatelessWidget {
                           return AlertDialog(
                             title: const Text("Delete...?"),
                             content: Text(
-                                "Are you sure? ${user.name} will be deleted?"),
+                                "Are you sure?  will be deleted?"),
                             actions: [
                               TextButton(
                                   onPressed: () {
@@ -144,9 +143,9 @@ class UserDetails extends StatelessWidget {
                                   },
                                   child: const Text("Cancel")),
                               TextButton(
-                                  onPressed: () {_deleteUser(context, user);
-
-                                    Navigator.of(context).pop();
+                                  onPressed: () async{
+                                    delete(context,name: widget.documentSnapshot["studentName"]);
+                                     Navigator.of(context).pop();
                                   },
                                   child: const Text("Delete")),
                             ],
@@ -172,21 +171,25 @@ class UserDetails extends StatelessWidget {
     );
   }
 
-  void _deleteUser(BuildContext context, User user) async {
-    DatabaseHelper databaseHelper = DatabaseHelper();
-    int result = await databaseHelper.deleteUser(user.id!);
-    if (result != 0) {
-      _showSnackBar(context, 'User Deleted Successfully');
-
-   Navigator.of(context).push(MaterialPageRoute(builder:  (context) => const HomePage())
-   );
-    } else {
-      _showSnackBar(context, 'Error Deleting User');
-    }
-  }
-
-  void _showSnackBar(BuildContext context, String message) {
+  void showSnackbar(BuildContext context, String message) {
     final snackBar = SnackBar(content: Text(message));
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+  void delete(BuildContext context, {required String name}) async {
+    DocumentReference documentReference = FirebaseFirestore.instance
+        .collection("Students")
+        .doc(name);
+    try {
+      await documentReference.delete();
+      showSnackbar(context, 'User Deleted Successfully');
+      await Future.delayed(Duration(seconds: 2));
+      Navigator.of(context).pop();
+
+      setState(() {
+      });
+    } catch (e) {
+      showSnackbar(context, 'Error deleting user: $e');
+    }
   }
 }
