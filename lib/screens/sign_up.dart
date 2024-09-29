@@ -23,7 +23,6 @@ class _SignUpState extends State<SignUp> {
   String email="";
   String password="";
   String fullname="";
-  bool login = false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -53,11 +52,11 @@ class _SignUpState extends State<SignUp> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      login?const SizedBox(height: 10,):  Row(
+                       Row(
                         children: [
                           Image.asset("assets/images/splash.png",width: 50,height: 50,),
                           const SizedBox(width: 10,),
-                          const Text("Log In")
+                          const Text("SingUp")
                         ],
 
                       ),

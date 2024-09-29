@@ -2,6 +2,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:studentsregistration/screens/home_screen.dart';
 import 'package:studentsregistration/screens/sign_up.dart';
 import 'package:studentsregistration/services/auth_service.dart';
@@ -162,14 +163,17 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: ElevatedButton(
                       onPressed: () async{
                         if (formkey.currentState!.validate()) {
-                          // checkLogIn(context);
+
                           formkey.currentState!.save();
                           await FirebaseAuth.instance.setPersistence(Persistence.LOCAL);
                         AuthServices.signinUser(email,password,context);
-                          Navigator.push(context, MaterialPageRoute(builder: (ctx){
+                        login=true;
+                        saveSharedPreference(context,login);
+                        Navigator.push(context, MaterialPageRoute(builder: (ctx){
                             return HomePage();
                           }));
                         } else {
+                          login=false;
                            if (kDebugMode) {
                              print("Data Empty");
                            }
@@ -208,5 +212,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
       ),
     );
+  }
+  void saveSharedPreference(context, bool login) async {
+    final shared = await SharedPreferences.getInstance();
+    await shared.setBool('isLoggedIn', login);
+
   }
 }

@@ -1,4 +1,11 @@
+
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
 
@@ -22,7 +29,9 @@ class UserDetailsEditState extends State<UserDetailsEdit> {
   TextEditingController ageController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
-  String? _imagePath;
+  Uint8List? imageBytes;
+  File? imagefile;
+  bool isPress=false;
   final formKey = GlobalKey<FormState>();
 @override
   void initState() {
@@ -32,11 +41,38 @@ class UserDetailsEditState extends State<UserDetailsEdit> {
     descriptionController.text=widget.documentSnapshot["studentId"];
     ageController.text=widget.documentSnapshot["age"];
     phoneController.text=widget.documentSnapshot["phone"];
-
+    String? base64Image = widget.documentSnapshot["image"];
+    if (base64Image != null && base64Image.isNotEmpty) {
+      imageBytes = base64.decode(base64Image);
+    }
   }
 
   super.initState();
   }
+  Future<String> uploadImage(Uint8List imageBytes) async {
+    // Create a reference to the Firebase Storage
+    final storageRef = FirebaseStorage.instance.ref();
+
+    // Create a unique file name for the image
+    String fileName = DateTime.now().millisecondsSinceEpoch.toString();
+
+    // Create a reference for the image
+    Reference imageRef = storageRef.child('images/$fileName');
+
+    // Upload the image
+    await imageRef.putData(imageBytes);
+
+    // Get the download URL
+    String downloadUrl = await imageRef.getDownloadURL();
+    return downloadUrl; // Return the download URL
+  }
+
+  // Future<String> imageToBase64(Uint8List imageBytes) async {
+  //   // base64 encode the bytes
+  //   String base64String = base64.encode(imageBytes);
+  //   return base64String;
+  // }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -46,7 +82,9 @@ class UserDetailsEditState extends State<UserDetailsEdit> {
         backgroundColor: Colors.black,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: moveToLastScreen,
+          onPressed: (){
+            Navigator.pop(context);
+          },
         ),
       ),
       body: Stack(
@@ -64,27 +102,45 @@ class UserDetailsEditState extends State<UserDetailsEdit> {
                 padding: const EdgeInsets.symmetric(horizontal: 30),
                 children: <Widget>[
                   InkWell(
+                    onTap: () async {
+                      try {
+                        FilePickerResult? result = await FilePicker.platform.pickFiles(
+                          type: FileType.image,
+                          allowMultiple: false,
+                          withData: true, // Ensure byte data is included
+                        );
+
+                        if (result != null) {
+                          imageBytes = result.files.first.bytes; // Handle image as bytes (for both web and mobile)
+
+                          setState(() {
+
+                          });
+                        } else {
+                          print("User canceled the picker");
+                        }
+                      } catch (e) {
+                        print("Error during file picking: $e");
+                      }
+                    },
+
                     child: CircleAvatar(
                       backgroundColor: Colors.black,
                       radius: 50,
-                      child: _imagePath != null
+                      child: imageBytes != null
                           ? SizedBox(
-                              width: 100,
-                              height: 100,
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(50),
-                                child: Image.file(
-                                  File(_imagePath!),
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            )
-                          : const Icon(Icons.camera_alt_outlined,
-                              color: Colors.white),
+                        width: 100,
+                        height: 100,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(50),
+                          child: Image.memory(
+                            imageBytes!,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      )
+                          : const Icon(Icons.camera_alt_outlined, color: Colors.white),
                     ),
-                    onTap: () {
-                      // Add functionality to pick image
-                    },
                   ),
                   buildTextFormField(nameController, 'Name'),
                   buildTextFormField(
@@ -115,47 +171,61 @@ class UserDetailsEditState extends State<UserDetailsEdit> {
                   ),
                   onPressed: () async {
                     if (formKey.currentState!.validate()) {
+
                       DocumentReference documentReference = FirebaseFirestore
                           .instance
                           .collection("Students")
                           .doc(nameController.text);
 
+                      String imageUrl = "";
+
+                      if (imageBytes != null) {
+                        imageUrl = await uploadImage(imageBytes!);
+                      }
                       Map<String, dynamic> student = {
                         "studentName": nameController.text,
                         "studentId": descriptionController.text,
                         "studyProgram": qualificationController.text,
                         "age": ageController.text,
                         "phone": phoneController.text,
+                        "image": imageUrl
                       };
 
-                     if(widget.appBarTitle=="Edit User"){
-                       try {
-                         await FirebaseFirestore
-                             .instance
-                             .collection("Students")
-                             .doc(widget.documentSnapshot["studentName"]).delete();
-                         await documentReference.set(student).whenComplete(() {
-                           print("Student data saved");
-                         });
-                       } catch (e) {
-                         print("Error: $e");
-                       }
-                     }
-                     else{
-                       try {
-                         await documentReference.set(student).whenComplete(() {
-                           print("Student data updated");
-                         });
-                       } catch (e) {
-                         print("Error: $e");
-                       }
-                     }
 
-                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx){
-                        return HomePage();
+                      if (widget.appBarTitle == "Edit User") {
+                        try {
+                          await FirebaseFirestore.instance
+                              .collection("Students")
+                              .doc(widget.documentSnapshot["studentName"])
+                              .delete();
+
+                          await documentReference.set(student).whenComplete(() {
+                            print("Student data updated");
+                          });
+                        } catch (e) {
+                          print("Error updating data: $e");
+                        }
+                      }
+                      else {
+                        try {
+                          await documentReference.set(student).whenComplete(() {
+                            print("Student data saved");
+                          });
+                        } catch (e) {
+                          print("Error saving data: $e"); // Detailed error logging
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Error saving student: $e'))
+                          );
+                        }
+
+                      }
+
+                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx) {
+                        return const HomePage();
                       }));
                     }
                   },
+
                   child: Text(widget.appBarTitle == 'Add Student'
                       ? 'Save Student'
                       : 'Update Student'),
@@ -207,18 +277,5 @@ class UserDetailsEditState extends State<UserDetailsEdit> {
     );
   }
 
-  void updateName() {
-     }
 
-  void updateQualification() {}
-
-  void updateAge() {}
-
-  void updatePhone() {}
-
-  void updateDescription() {}
-
-  void moveToLastScreen() {
-    Navigator.pop(context, true);
-  }
 }

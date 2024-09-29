@@ -1,13 +1,10 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'dart:io';
-
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:studentsregistration/screens/home_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:studentsregistration/models/user.dart';
 import 'package:studentsregistration/screens/edit_user_details.dart';
-import 'package:studentsregistration/utils/database_helper.dart';
 
 class UserDetails extends StatefulWidget {
   final documentSnapshot;
@@ -17,8 +14,17 @@ class UserDetails extends StatefulWidget {
   @override
   State<UserDetails> createState() => _UserDetailsState();
 }
-
+Uint8List? imageBytes;
 class _UserDetailsState extends State<UserDetails> {
+
+  @override
+  void initState() {
+    String? base64Image = widget.documentSnapshot["image"];
+    if (base64Image != null && base64Image.isNotEmpty) {
+      imageBytes = base64.decode(base64Image);
+    }
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,10 +47,21 @@ class _UserDetailsState extends State<UserDetails> {
             child:   CircleAvatar(
               backgroundColor: Colors.black,
               radius: 50,
-              child:
-                  const Icon(Icons.person,color: Colors.white),
-
-            ),),
+              child: imageBytes != null
+                  ? SizedBox(
+                width: 100,
+                height: 100,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(50),
+                  child: Image.memory(
+                    imageBytes!,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              )
+                  : const Icon(Icons.camera_alt_outlined, color: Colors.white),
+            ),
+          ),
           Positioned(
             top: MediaQuery.of(context).size.height/7.5,
             left: 20,
@@ -111,10 +128,10 @@ class _UserDetailsState extends State<UserDetails> {
               ElevatedButton(
 
                 onPressed: () {
-                  // Navigator.of(context).push(MaterialPageRoute(
-                  //
-                  //   builder: (context) => UserDetailsEdit("user", "Edit User"),
-                  // ));
+                  navigateToDetail(
+                  documentSnapshot: widget.documentSnapshot,
+                  'Edit User',
+                );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.black,
@@ -181,9 +198,8 @@ class _UserDetailsState extends State<UserDetails> {
         .collection("Students")
         .doc(name);
     try {
-      await documentReference.delete();
       showSnackbar(context, 'User Deleted Successfully');
-      await Future.delayed(Duration(seconds: 2));
+       documentReference.delete();
       Navigator.of(context).pop();
 
       setState(() {
@@ -191,5 +207,15 @@ class _UserDetailsState extends State<UserDetails> {
     } catch (e) {
       showSnackbar(context, 'Error deleting user: $e');
     }
+  }
+  void navigateToDetail(String title, {required documentSnapshot}) async {
+     await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            UserDetailsEdit(documentSnapshot: documentSnapshot, title),
+      ),
+    );
+
   }
 }

@@ -17,7 +17,7 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
-    goToLogin();
+    checkUserLogedin();
     super.initState();
   }
 
@@ -62,10 +62,11 @@ class _SplashScreenState extends State<SplashScreen> {
         .pushReplacement(MaterialPageRoute(builder: (ctx) => const LoginScreen()));
   }
 
+
   Future<void> checkUserLogedin() async {
     final sharedprfs = await SharedPreferences.getInstance();
-    final userLoggedIn = sharedprfs.getBool(save_Key);
-    if (userLoggedIn == null || userLoggedIn == false) {
+    bool? isLoggedIn = sharedprfs.getBool('isLoggedIn');
+    if (isLoggedIn == null || isLoggedIn == false) {
       goToLogin();
     } else {
       Navigator.of(context)
