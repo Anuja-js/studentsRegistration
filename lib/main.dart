@@ -4,7 +4,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:studentsregistration/screens/home_screen.dart';
 import 'package:studentsregistration/screens/splash_screen.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 const save_Key = "userLoggedIn";
 void main()async{

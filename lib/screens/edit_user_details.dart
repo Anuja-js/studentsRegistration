@@ -1,4 +1,3 @@
-
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:convert';
@@ -11,11 +10,16 @@ import 'dart:io';
 
 import 'package:studentsregistration/screens/home_screen.dart';
 
+import '../customs/constants.dart';
+
 class UserDetailsEdit extends StatefulWidget {
   final String appBarTitle;
   final documentSnapshot;
 
-   UserDetailsEdit(this.appBarTitle,  {required this.documentSnapshot,});
+  UserDetailsEdit(
+    this.appBarTitle, {
+    required this.documentSnapshot,
+  });
 
   @override
   State<StatefulWidget> createState() {
@@ -31,26 +35,24 @@ class UserDetailsEditState extends State<UserDetailsEdit> {
   TextEditingController descriptionController = TextEditingController();
   Uint8List? imageBytes;
   File? imagefile;
-  bool isPress=false;
+  bool isPress = false;
+  String? image;
   final formKey = GlobalKey<FormState>();
-@override
+  @override
   void initState() {
-  if(widget.appBarTitle=="Edit User"){
-    nameController.text=widget.documentSnapshot["studentName"];
-    qualificationController.text=widget.documentSnapshot["studyProgram"];
-    descriptionController.text=widget.documentSnapshot["studentId"];
-    ageController.text=widget.documentSnapshot["age"];
-    phoneController.text=widget.documentSnapshot["phone"];
-    String? base64Image = widget.documentSnapshot["image"];
-    if (base64Image != null && base64Image.isNotEmpty) {
-      imageBytes = base64.decode(base64Image);
+    if (widget.appBarTitle == "Edit User") {
+      nameController.text = widget.documentSnapshot["studentName"];
+      qualificationController.text = widget.documentSnapshot["studyProgram"];
+      descriptionController.text = widget.documentSnapshot["studentId"];
+      ageController.text = widget.documentSnapshot["age"];
+      phoneController.text = widget.documentSnapshot["phone"];
+      image = widget.documentSnapshot["image"];
     }
+    super.initState();
   }
 
-  super.initState();
-  }
   Future<String> uploadImage(Uint8List imageBytes) async {
-    // Create a reference to the Firebase Storage
+    // Create a reference to Firebase Storage
     final storageRef = FirebaseStorage.instance.ref();
 
     // Create a unique file name for the image
@@ -59,11 +61,16 @@ class UserDetailsEditState extends State<UserDetailsEdit> {
     // Create a reference for the image
     Reference imageRef = storageRef.child('images/$fileName');
 
-    // Upload the image
-    await imageRef.putData(imageBytes);
+    // Define metadata with content type as image
+    final metadata = SettableMetadata(
+        contentType: 'image/jpeg'); // or 'image/png' based on your image format
+
+    // Upload the image with metadata
+    await imageRef.putData(imageBytes, metadata);
 
     // Get the download URL
     String downloadUrl = await imageRef.getDownloadURL();
+
     return downloadUrl; // Return the download URL
   }
 
@@ -82,7 +89,7 @@ class UserDetailsEditState extends State<UserDetailsEdit> {
         backgroundColor: Colors.black,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: (){
+          onPressed: () {
             Navigator.pop(context);
           },
         ),
@@ -104,18 +111,18 @@ class UserDetailsEditState extends State<UserDetailsEdit> {
                   InkWell(
                     onTap: () async {
                       try {
-                        FilePickerResult? result = await FilePicker.platform.pickFiles(
+                        FilePickerResult? result =
+                            await FilePicker.platform.pickFiles(
                           type: FileType.image,
                           allowMultiple: false,
                           withData: true, // Ensure byte data is included
                         );
 
                         if (result != null) {
-                          imageBytes = result.files.first.bytes; // Handle image as bytes (for both web and mobile)
+                          imageBytes = result.files.first
+                              .bytes; // Handle image as bytes (for both web and mobile)
 
-                          setState(() {
-
-                          });
+                          setState(() {});
                         } else {
                           print("User canceled the picker");
                         }
@@ -123,30 +130,51 @@ class UserDetailsEditState extends State<UserDetailsEdit> {
                         print("Error during file picking: $e");
                       }
                     },
-
-                    child: CircleAvatar(
-                      backgroundColor: Colors.black,
-                      radius: 50,
-                      child: imageBytes != null
-                          ? SizedBox(
-                        width: 100,
-                        height: 100,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(50),
-                          child: Image.memory(
-                            imageBytes!,
-                            fit: BoxFit.cover,
-                          ),
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        sh10,
+                        CircleAvatar(
+                          backgroundColor: Colors.black,
+                          radius: 50,
+                          child: widget.appBarTitle == "Edit User"
+                              ? image != ""
+                                  ? SizedBox(
+                                      width: 100,
+                                      height: 100,
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(50),
+                                        child: Image.network(
+                                          widget.documentSnapshot["image"]!,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                    )
+                                  : const Icon(Icons.camera_alt_outlined,
+                                      color: Colors.white)
+                              : imageBytes != null
+                                  ? SizedBox(
+                                      width: 100,
+                                      height: 100,
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(50),
+                                        child: Image.memory(
+                                          imageBytes!,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                    )
+                                  : const Icon(Icons.camera_alt_outlined,
+                                      color: Colors.white),
                         ),
-                      )
-                          : const Icon(Icons.camera_alt_outlined, color: Colors.white),
+                      ],
                     ),
                   ),
                   buildTextFormField(nameController, 'Name'),
+                  buildTextFormField(descriptionController, 'Student ID'),
                   buildTextFormField(
-                      descriptionController, 'Student ID'),
-                  buildTextFormField(qualificationController, 'Study Program',
-                      ),
+                    qualificationController,
+                    'Study Program',
+                  ),
                   buildTextFormField(ageController, 'Age',
                       keyboardType: TextInputType.number),
                   buildTextFormField(phoneController, 'Phone',
@@ -158,8 +186,7 @@ class UserDetailsEditState extends State<UserDetailsEdit> {
           ),
           Positioned(
             bottom: 20,
-            left: 20,
-            right: 20,
+            left: 15,right: 50,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -171,7 +198,6 @@ class UserDetailsEditState extends State<UserDetailsEdit> {
                   ),
                   onPressed: () async {
                     if (formKey.currentState!.validate()) {
-
                       DocumentReference documentReference = FirebaseFirestore
                           .instance
                           .collection("Students")
@@ -191,7 +217,6 @@ class UserDetailsEditState extends State<UserDetailsEdit> {
                         "image": imageUrl
                       };
 
-
                       if (widget.appBarTitle == "Edit User") {
                         try {
                           await FirebaseFirestore.instance
@@ -205,27 +230,25 @@ class UserDetailsEditState extends State<UserDetailsEdit> {
                         } catch (e) {
                           print("Error updating data: $e");
                         }
-                      }
-                      else {
+                      } else {
                         try {
                           await documentReference.set(student).whenComplete(() {
                             print("Student data saved");
                           });
                         } catch (e) {
-                          print("Error saving data: $e"); // Detailed error logging
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Error saving student: $e'))
-                          );
+                          print(
+                              "Error saving data: $e"); // Detailed error logging
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text('Error saving student: $e')));
                         }
-
                       }
 
-                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx) {
+                      Navigator.pushReplacement(context,
+                          MaterialPageRoute(builder: (ctx) {
                         return const HomePage();
                       }));
                     }
                   },
-
                   child: Text(widget.appBarTitle == 'Add Student'
                       ? 'Save Student'
                       : 'Update Student'),
@@ -238,8 +261,7 @@ class UserDetailsEditState extends State<UserDetailsEdit> {
     );
   }
 
-  Widget buildTextFormField(
-      TextEditingController controller, String label,
+  Widget buildTextFormField(TextEditingController controller, String label,
       {TextInputType keyboardType = TextInputType.text}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 15),
@@ -247,9 +269,7 @@ class UserDetailsEditState extends State<UserDetailsEdit> {
         controller: controller,
         style: const TextStyle(fontSize: 18.0),
         keyboardType: keyboardType,
-        onChanged: (value) {
-
-        },
+        onChanged: (value) {},
         decoration: InputDecoration(
           labelText: label,
           labelStyle: const TextStyle(color: Colors.black),
@@ -276,6 +296,4 @@ class UserDetailsEditState extends State<UserDetailsEdit> {
       ),
     );
   }
-
-
 }

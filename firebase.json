@@ -1,1 +1,46 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"student-registration-930f1","appId":"1:222644086025:android:b51fa9c5815fc8ff511fd8","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"student-registration-930f1","configurations":{"android":"1:222644086025:android:b51fa9c5815fc8ff511fd8","ios":"1:222644086025:ios:29ee27416a28a7f1511fd8","macos":"1:222644086025:ios:29ee27416a28a7f1511fd8","web":"1:222644086025:web:a0610bd8cafb3b64511fd8","windows":"1:222644086025:web:4c7f0635545d2db7511fd8"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "student-registration-930f1",
+          "appId": "1:222644086025:android:b51fa9c5815fc8ff511fd8",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "student-registration-930f1",
+          "configurations": {
+            "android": "1:222644086025:android:b51fa9c5815fc8ff511fd8",
+            "ios": "1:222644086025:ios:29ee27416a28a7f1511fd8",
+            "macos": "1:222644086025:ios:29ee27416a28a7f1511fd8",
+            "web": "1:222644086025:web:a0610bd8cafb3b64511fd8",
+            "windows": "1:222644086025:web:4c7f0635545d2db7511fd8"
+          }
+        }
+      }
+    }
+  },
+  "hosting": {
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "headers": [
+      {
+        "source": "**/*.@(eot|otf|ttf|ttc|woff|font.css)",
+        "headers": [
+          {
+            "key": "Access-Control-Allow-Origin",
+            "value": "*"
+          }
+        ]
+      }
+    ]
+  }
+
+
+}

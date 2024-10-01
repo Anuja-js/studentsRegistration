@@ -52,123 +52,134 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Form(
               key: formkey,
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  login?SizedBox(height: 10,):  Row(
-                    children: [
-                      Image.asset("assets/images/splash.png",width: 50,height: 50,),
-                      const SizedBox(width: 10,),
-                      const Text("Log In")
-                    ],
+                  login?SizedBox(height: 10,):
+                  SizedBox(width: MediaQuery.of(context).size.width/3,
+                    child: Row(
+                      children: [
+                        Image.asset("assets/images/splash.png",width: 50,height: 50,),
+                        const SizedBox(width: 10,),
+                        const Text("Log In")
+                      ],
+                    ),
                   ),
                   const SizedBox(
                     height: 20,
                   ),
-                  TextFormField(key: const ValueKey("email"),
-                    style: const TextStyle(
-                      fontSize: 15.0,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    controller: emailController,
-                    obscureText: obscure,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: InputDecoration(
-                      suffixIcon: IconButton(
-                          onPressed: () {
-                            setState(() {
-                              obscure = !obscure;
-                            });
-                          },
-                          icon: obscure
-                              ?const Icon(Icons.visibility_outlined,
-                            color: Colors.black,)
-                              :const Icon(
-                            Icons.visibility_off_outlined,
-                            color:Colors.black,
-                          )),
-                      labelText: "Enter Your Email",
-                      labelStyle:const TextStyle(color: Colors.black,),
-                      border: const OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.grey, width: 2)),
-                      errorBorder:const OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.red, width: 2),
+                  SizedBox(width: MediaQuery.of(context).size.width/3,
+                    child: TextFormField(key: const ValueKey("email"),
+                      style: const TextStyle(
+                        fontSize: 15.0,
+                        fontWeight: FontWeight.bold,
                       ),
-                      focusedBorder:const OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.grey, width: 2),
+                      controller: emailController,
+                      obscureText: obscure,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: InputDecoration(
+                        suffixIcon: IconButton(
+                            onPressed: () {
+                              setState(() {
+                                obscure = !obscure;
+                              });
+                            },
+                            icon: obscure
+                                ?const Icon(Icons.visibility_outlined,
+                              color: Colors.black,)
+                                :const Icon(
+                              Icons.visibility_off_outlined,
+                              color:Colors.black,
+                            )),
+                        labelText: "Enter Your Email",
+                        labelStyle:const TextStyle(color: Colors.black,),
+                        border: const OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.grey, width: 2)),
+                        errorBorder:const OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.red, width: 2),
+                        ),
+                        focusedBorder:const OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.grey, width: 2),
+                        ),
                       ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return "Please Enter Your Email";
+                        } else {
+                          return null;
+                        }
+                      },onSaved: (value){
+                        setState(() {
+                          email=value!;
+                        });
+                      },
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return "Please Enter Your Email";
-                      } else {
-                        return null;
-                      }
-                    },onSaved: (value){
-                      setState(() {
-                        email=value!;
-                      });
-                    },
                   ),
                   const SizedBox(
                     height: 30,
                   ),
-                  TextFormField(key: const ValueKey("password"),
-                    style: const TextStyle(
-                      fontSize: 15.0,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    controller: passwordController,
-                    obscureText: obscurepass,
-                    keyboardType: TextInputType.visiblePassword,
-                    decoration: InputDecoration(
-                      suffixIcon: IconButton(
-                          onPressed: () {
-                            setState(() {
-                              obscurepass = !obscurepass;
-                            });
-                          },
-                          icon: obscurepass
-                              ?const Icon(Icons.visibility_outlined,
-                            color: Colors.black,)
-                              :const Icon(
-                            Icons.visibility_off_outlined,
-                            color:Colors.black,
-                          )),
-                      labelText: "Enter Your Password",
-                      labelStyle:const TextStyle(color: Colors.black,),
-                      border: const OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.grey, width: 2)),
-                      errorBorder:const OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.red, width: 2),
+                  SizedBox(width: MediaQuery.of(context).size.width/3,
+                    child: TextFormField(key: const ValueKey("password"),
+                      style: const TextStyle(
+                        fontSize: 15.0,
+                        fontWeight: FontWeight.bold,
                       ),
-                      focusedBorder:const OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.grey, width: 2),
+                      controller: passwordController,
+                      obscureText: obscurepass,
+                      keyboardType: TextInputType.visiblePassword,
+                      decoration: InputDecoration(
+                        suffixIcon: IconButton(
+                            onPressed: () {
+                              setState(() {
+                                obscurepass = !obscurepass;
+                              });
+                            },
+                            icon: obscurepass
+                                ?const Icon(Icons.visibility_outlined,
+                              color: Colors.black,)
+                                :const Icon(
+                              Icons.visibility_off_outlined,
+                              color:Colors.black,
+                            )),
+                        labelText: "Enter Your Password",
+                        labelStyle:const TextStyle(color: Colors.black,),
+                        border: const OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.grey, width: 2)),
+                        errorBorder:const OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.red, width: 2),
+                        ),
+                        focusedBorder:const OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.grey, width: 2),
+                        ),
                       ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return "Please Enter Your Password";
+                        } else {
+                          return null;
+                        }
+                      },onSaved: (value){
+                        setState(() {
+                          password=value!;
+                        });
+                      },
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return "Please Enter Your Password";
-                      } else {
-                        return null;
-                      }
-                    },onSaved: (value){
-                      setState(() {
-                        password=value!;
-                      });
-                    },
                   ),
 
                   const Spacer(),
-                  Center(
+                  SizedBox(width: MediaQuery.of(context).size.width/3,height: 50,
                     child: ElevatedButton(
                       onPressed: () async{
                         if (formkey.currentState!.validate()) {
-
                           formkey.currentState!.save();
-                          await FirebaseAuth.instance.setPersistence(Persistence.LOCAL);
+                          // await FirebaseAuth.instance
+                          //     .signInWithEmailAndPassword(
+                          //   email: emailController.text.trim(),
+                          //   password: passwordController.text.trim(),
+                          // );
+                        //   await FirebaseAuth.instance.setPersistence(Persistence.LOCAL);
                         AuthServices.signinUser(email,password,context);
                         login=true;
-                        saveSharedPreference(context,login);
+                         saveSharedPreference(context,login);
                         Navigator.push(context, MaterialPageRoute(builder: (ctx){
                             return HomePage();
                           }));
@@ -185,14 +196,15 @@ class _LoginScreenState extends State<LoginScreen> {
                         foregroundColor:MaterialStateProperty.all(Colors.white),
                         padding: MaterialStateProperty.all(
                           EdgeInsets.symmetric(
-                              vertical: 15,
-                              horizontal: MediaQuery.of(context).size.width / 2.5),
+                              vertical: 2,
+                              horizontal: 5,
+                          )
                         ),
                       ),
-                      child: const Text("LogIn",style: TextStyle(color: Colors.white),),
+                      child:  Text("LogIn",style: TextStyle(color: Colors.white),),
                     ),
                   ),
-                  const SizedBox(height: 30,),
+                  const SizedBox(height: 10,),
                   Row(mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text("Don't have an account?"),
@@ -202,7 +214,8 @@ class _LoginScreenState extends State<LoginScreen> {
                        }));
                      }, child: Text("SignUp"))
                     ],
-                  )
+                  ),
+                  const SizedBox(height: 10,),
                 ],
               ),
           ),

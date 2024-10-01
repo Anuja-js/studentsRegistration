@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:studentsregistration/screens/edit_user_details.dart';
 
 class UserDetails extends StatefulWidget {
+  // ignore: prefer_typing_uninitialized_variables
   final documentSnapshot;
 
   const UserDetails(this.documentSnapshot , {super.key,});
@@ -19,10 +20,6 @@ class _UserDetailsState extends State<UserDetails> {
 
   @override
   void initState() {
-    String? base64Image = widget.documentSnapshot["image"];
-    if (base64Image != null && base64Image.isNotEmpty) {
-      imageBytes = base64.decode(base64Image);
-    }
     super.initState();
   }
   @override
@@ -44,22 +41,38 @@ class _UserDetailsState extends State<UserDetails> {
           Positioned(
             left:  MediaQuery.of(context).size.width/2.55, top: 20,
 
-            child:   CircleAvatar(
-              backgroundColor: Colors.black,
-              radius: 50,
-              child: imageBytes != null
-                  ? SizedBox(
-                width: 100,
-                height: 100,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(50),
-                  child: Image.memory(
-                    imageBytes!,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              )
-                  : const Icon(Icons.camera_alt_outlined, color: Colors.white),
+            child:   widget.documentSnapshot["image"]!= ""
+                ? ClipRRect(borderRadius: BorderRadius.circular(100),
+              child: Image.network(
+                widget.documentSnapshot["image"],width: 50,height: 50,fit: BoxFit.cover,
+                loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                  if (loadingProgress == null) {
+                    return child;
+                  }
+                  return Center(
+                    child: CircularProgressIndicator(
+                      value: loadingProgress.expectedTotalBytes != null
+                          ? loadingProgress.cumulativeBytesLoaded / (loadingProgress.expectedTotalBytes ?? 1)
+                          : null,
+                    ),
+                  );
+                },
+                errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
+                  return const Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.error, color: Colors.red, size: 20),
+                      SizedBox(height: 10),
+                      Text('Failed load',
+                          style: TextStyle(fontSize: 10, color: Colors.black)),
+                    ],
+                  );
+                },
+              ),
+            )
+                : const CircleAvatar(
+              backgroundColor: Colors.grey,
+              child: Icon(Icons.person), // Placeholder icon
             ),
           ),
           Positioned(
@@ -151,7 +164,7 @@ class _UserDetailsState extends State<UserDetails> {
                         builder: (BuildContext context) {
                           return AlertDialog(
                             title: const Text("Delete...?"),
-                            content: Text(
+                            content: const Text(
                                 "Are you sure?  will be deleted?"),
                             actions: [
                               TextButton(
@@ -209,7 +222,7 @@ class _UserDetailsState extends State<UserDetails> {
     }
   }
   void navigateToDetail(String title, {required documentSnapshot}) async {
-     await Navigator.push(
+     await Navigator.pushReplacement(
       context,
       MaterialPageRoute(
         builder: (context) =>
