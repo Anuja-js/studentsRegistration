@@ -2,8 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import '../main.dart';
 import 'home_screen.dart';
 import 'login_screen.dart';
 

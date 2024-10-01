@@ -1,23 +1,22 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
-import 'dart:convert';
 import 'dart:typed_data';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:studentsregistration/customs/custom_text.dart';
 import 'dart:io';
-
 import 'package:studentsregistration/screens/home_screen.dart';
-
 import '../customs/constants.dart';
-
 class UserDetailsEdit extends StatefulWidget {
   final String appBarTitle;
+  // ignore: prefer_typing_uninitialized_variables
   final documentSnapshot;
 
   UserDetailsEdit(
-    this.appBarTitle, {
+    this.appBarTitle, {super.key,
     required this.documentSnapshot,
   });
 
@@ -36,6 +35,7 @@ class UserDetailsEditState extends State<UserDetailsEdit> {
   Uint8List? imageBytes;
   File? imagefile;
   bool isPress = false;
+  bool load = false;
   String? image;
   final formKey = GlobalKey<FormState>();
   @override
@@ -46,7 +46,7 @@ class UserDetailsEditState extends State<UserDetailsEdit> {
       descriptionController.text = widget.documentSnapshot["studentId"];
       ageController.text = widget.documentSnapshot["age"];
       phoneController.text = widget.documentSnapshot["phone"];
-      image = widget.documentSnapshot["image"];
+      image = widget.documentSnapshot["image"]??"";
     }
     super.initState();
   }
@@ -73,13 +73,6 @@ class UserDetailsEditState extends State<UserDetailsEdit> {
 
     return downloadUrl; // Return the download URL
   }
-
-  // Future<String> imageToBase64(Uint8List imageBytes) async {
-  //   // base64 encode the bytes
-  //   String base64String = base64.encode(imageBytes);
-  //   return base64String;
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -104,157 +97,160 @@ class UserDetailsEditState extends State<UserDetailsEdit> {
           ),
           SizedBox(
               width: MediaQuery.of(context).size.width,
-              child: SizedBox(
-                width: MediaQuery.of(context).size.width / 3,
-              )), Center(
-                child: SizedBox(width: MediaQuery.of(context).size.width/3,
-                child: Form(
-                  key: formKey,
-                  child: ListView(
-                    padding: const EdgeInsets.symmetric(horizontal: 30),
-                    children: <Widget>[
-                      InkWell(
-                        onTap: () async {
-                          try {
-                            FilePickerResult? result =
-                            await FilePicker.platform.pickFiles(
-                              type: FileType.image,
-                              allowMultiple: false,
-                              withData: true, // Ensure byte data is included
-                            );
+          ),
+          Center(
+                child: ConstrainedBox(constraints: const BoxConstraints(maxWidth:500,),
+                  child: Form(
+                    key: formKey,
+                    child: ListView(
+                      padding: const EdgeInsets.symmetric(horizontal: 30),
+                      children: <Widget>[
+                        InkWell(
+                          onTap: () async {
+                            try {
+                              FilePickerResult? result =
+                              await FilePicker.platform.pickFiles(
+                                type: FileType.image,
+                                allowMultiple: false,
+                                withData: true, // Ensure byte data is included
+                              );
 
-                            if (result != null) {
-                              imageBytes = result.files.first
-                                  .bytes; // Handle image as bytes (for both web and mobile)
+                              if (result != null) {
+                                imageBytes = result.files.first
+                                    .bytes; // Handle image as bytes (for both web and mobile)
 
-                              setState(() {});
-                            } else {
-                              print("User canceled the picker");
-                            }
-                          } catch (e) {
-                            print("Error during file picking: $e");
-                          }
-                        },
-                        child: Column(crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            sh10,
-                            CircleAvatar(
-                              backgroundColor: Colors.black,
-                              radius: 50,
-                              child: widget.appBarTitle == "Edit User"
-                                  ? image != ""
-                                  ? SizedBox(
-                                width: 100,
-                                height: 100,
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(50),
-                                  child: Image.network(
-                                    widget.documentSnapshot["image"]!,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                              )
-                                  : const Icon(Icons.camera_alt_outlined,
-                                  color: Colors.white)
-                                  : imageBytes != null
-                                  ? SizedBox(
-                                width: 100,
-                                height: 100,
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(50),
-                                  child: Image.memory(
-                                    imageBytes!,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                              )
-                                  : const Icon(Icons.camera_alt_outlined,
-                                  color: Colors.white),
-                            ),
-                          ],
-                        ),
-                      ),
-                      buildTextFormField(nameController, 'Name'),
-                      buildTextFormField(descriptionController, 'Student ID'),
-                      buildTextFormField(
-                        qualificationController,
-                        'Study Program',
-                      ),
-                      buildTextFormField(ageController, 'Age',
-                          keyboardType: TextInputType.number),
-                      buildTextFormField(phoneController, 'Phone',
-                          keyboardType: TextInputType.number),
-                      const SizedBox(height: 55),
-
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.black,
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 15, horizontal: 20),
-                        ),
-                        onPressed: () async {
-                          if (formKey.currentState!.validate()) {
-                            DocumentReference documentReference = FirebaseFirestore
-                                .instance
-                                .collection("Students")
-                                .doc(nameController.text);
-
-                            String imageUrl = "";
-
-                            if (imageBytes != null) {
-                              imageUrl = await uploadImage(imageBytes!);
-                            }
-                            Map<String, dynamic> student = {
-                              "studentName": nameController.text,
-                              "studentId": descriptionController.text,
-                              "studyProgram": qualificationController.text,
-                              "age": ageController.text,
-                              "phone": phoneController.text,
-                              "image": imageUrl
-                            };
-
-                            if (widget.appBarTitle == "Edit User") {
-                              try {
-                                await FirebaseFirestore.instance
-                                    .collection("Students")
-                                    .doc(widget.documentSnapshot["studentName"])
-                                    .delete();
-
-                                await documentReference.set(student).whenComplete(() {
-                                  print("Student data updated");
-                                });
-                              } catch (e) {
-                                print("Error updating data: $e");
+                                setState(() {});
+                              } else {
                               }
-                            } else {
-                              try {
-                                await documentReference.set(student).whenComplete(() {
-                                  print("Student data saved");
-                                });
-                              } catch (e) {
-                                print(
-                                    "Error saving data: $e"); // Detailed error logging
-                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                    content: Text('Error saving student: $e')));
+                            } catch (e) {
+                           }
+                          },
+                          child: Column(crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              sh10,
+                              CircleAvatar(
+                                backgroundColor: Colors.black,
+                                radius: 50,
+                                child: imageBytes==null
+                                    ? image != "" && image!=null
+                                    ? SizedBox(
+                                  width: 100,
+                                  height: 100,
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(50),
+                                    child: Image.network(
+                                  image.toString(),
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                )
+                                    : const Icon(Icons.camera_alt_outlined,
+                                    color: Colors.white)
+                                    : imageBytes != null
+                                    ? SizedBox(
+                                  width: 100,
+                                  height: 100,
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(50),
+                                    child: Image.memory(
+                                      imageBytes!,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                )
+                                    : const Icon(Icons.camera_alt_outlined,
+                                    color: Colors.white),
+                              ),
+                            ],
+                          ),
+                        ),
+                        buildTextFormField(nameController, 'Name'),
+                        buildTextFormField(descriptionController, 'Student ID'),
+                        buildTextFormField(
+                          qualificationController,
+                          'Study Program',
+                        ),
+                        buildTextFormField(ageController, 'Age',
+                            keyboardType: TextInputType.number),
+                        buildTextFormField(phoneController, 'Phone',
+                            keyboardType: TextInputType.number),
+                        const SizedBox(height: 55),
+
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: black,
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 15, horizontal: 20),
+                          ),
+                          onPressed: () async {
+                            if (formKey.currentState!.validate()) {
+                              load=true;
+                              setState(() {
+
+                              });
+                              DocumentReference documentReference = FirebaseFirestore
+                                  .instance
+                                  .collection("Students")
+                                  .doc(nameController.text);
+
+                              String imageUrl = "";
+
+                              if (imageBytes != null) {
+                                imageUrl = await uploadImage(imageBytes!);
                               }
+                              Map<String, dynamic> student = {
+                                "studentName": nameController.text,
+                                "studentId": descriptionController.text,
+                                "studyProgram": qualificationController.text,
+                                "age": ageController.text,
+                                "phone": phoneController.text,
+                                "image": imageUrl
+                              };
+
+                              if (widget.appBarTitle == "Edit User") {
+                                try {
+                                  await FirebaseFirestore.instance
+                                      .collection("Students")
+                                      .doc(widget.documentSnapshot["studentName"])
+                                      .delete();
+
+                                  await documentReference.set(student).whenComplete(() {
+
+                                  });
+                                // ignore: empty_catches
+                                } catch (e) {
+                                }
+                              } else {
+                                try {
+                                  await documentReference.set(student).whenComplete(() {
+
+                                  });
+                                } catch (e) {
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                      content: Text('Error saving student: $e')));
+                                }
+                              }
+                              ScaffoldMessenger.of(context).showSnackBar( SnackBar(duration: const Duration(seconds: 1),
+                                  content:widget.appBarTitle == 'Add Student' ?TextCustom(text: 'Student Added Succesfully',color: white,):TextCustom(color: white,text: 'Student updated Succesfully')
+                              ));
+                              load=false;
+                              setState(() {
+
+                              });
+                              Navigator.pushReplacement(context,
+                                  MaterialPageRoute(builder: (ctx) {
+                                    return const HomePage();
+                                  }));
                             }
-                            ScaffoldMessenger.of(context).showSnackBar( SnackBar(duration: Duration(seconds: 1),
-                                content:widget.appBarTitle == 'Add Student' ?Text('Student Added Succesfully'):Text('Student updated Succesfully')
-                            ));
-                            Navigator.pushReplacement(context,
-                                MaterialPageRoute(builder: (ctx) {
-                                  return const HomePage();
-                                }));
-                          }
-                        },
-                        child: Text(widget.appBarTitle == 'Add Student'
-                            ? 'Save Student'
-                            : 'Update Student'),
-                      ),
-                    ],
+                          },
+                          child:load?const SizedBox(width:20,height:20,child: CircularProgressIndicator()): Text(widget.appBarTitle == 'Add Student'
+                              ? 'Save Student'
+                              : 'Update Student',style: TextStyle(color: white),),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-                            ),
 
               ),
 
@@ -268,36 +264,34 @@ class UserDetailsEditState extends State<UserDetailsEdit> {
       {TextInputType keyboardType = TextInputType.text}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 15),
-      child: SizedBox(width: MediaQuery.of(context).size.width/3,
-        child: TextFormField(
-          controller: controller,
-          style: const TextStyle(fontSize: 18.0),
-          keyboardType: keyboardType,
-          onChanged: (value) {},
-          decoration: InputDecoration(
-            labelText: label,
-            labelStyle: const TextStyle(color: Colors.black),
-            fillColor: Colors.grey,
-            border: const OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.grey, width: 2),
-            ),
-            focusedBorder: const OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.grey, width: 2),
-            ),
+      child: TextFormField(
+        controller: controller,
+        style: const TextStyle(fontSize: 18.0),
+        keyboardType: keyboardType,
+        onChanged: (value) {},
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: const TextStyle(color: Colors.black),
+          fillColor: Colors.grey,
+          border: const OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.grey, width: 2),
           ),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return "Please enter $label";
-            }
-            if (label == 'Phone' && !RegExp(r'^\d{10}$').hasMatch(value)) {
-              return "Phone number must be 10 digits";
-            }
-            if (label == 'Age' && !RegExp(r'^\d{1,3}$').hasMatch(value)) {
-              return "Age must be a valid number";
-            }
-            return null;
-          },
+          focusedBorder: const OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.grey, width: 2),
+          ),
         ),
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return "Please enter $label";
+          }
+          if (label == 'Phone' && !RegExp(r'^\d{10}$').hasMatch(value)) {
+            return "Phone number must be 10 digits";
+          }
+          if (label == 'Age' && !RegExp(r'^\d{1,3}$').hasMatch(value)) {
+            return "Age must be a valid number";
+          }
+          return null;
+        },
       ),
     );
   }

@@ -1,11 +1,11 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'dart:convert';
 import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:studentsregistration/customs/constants.dart';
 import 'package:studentsregistration/screens/edit_user_details.dart';
+import 'package:studentsregistration/screens/home_screen.dart';
 
 class UserDetails extends StatefulWidget {
   // ignore: prefer_typing_uninitialized_variables
@@ -28,7 +28,11 @@ class _UserDetailsState extends State<UserDetails> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.documentSnapshot["studentName"],style: const TextStyle(color: Colors.white),),
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.black,leading: IconButton(onPressed: (){
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx){
+            return const HomePage();
+          }));
+      }, icon: const Icon(Icons.arrow_back_outlined),color: white,),
       ),
       body: Stack(
 
@@ -39,165 +43,161 @@ class _UserDetailsState extends State<UserDetails> {
               right: 0,
               bottom: 0,
               child: Image.asset("assets/images/background.jpeg",fit: BoxFit.fill,)),
+          SizedBox(
+              width: MediaQuery.of(context).size.width,
+             ),
 
-          Positioned(
-            left:  10, top: 20,
-
-            child:   widget.documentSnapshot["image"]!= ""
-                ? ClipRRect(borderRadius: BorderRadius.circular(100),
-              child: Image.network(
-                widget.documentSnapshot["image"],width: 75,height: 75,fit: BoxFit.cover,
-                loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
-                  if (loadingProgress == null) {
-                    return child;
-                  }
-                  return Center(
-                    child: CircularProgressIndicator(
-                      value: loadingProgress.expectedTotalBytes != null
-                          ? loadingProgress.cumulativeBytesLoaded / (loadingProgress.expectedTotalBytes ?? 1)
-                          : null,
+          Center(
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  sh50,widget.documentSnapshot["image"]!= ""
+                      ? ClipRRect(borderRadius: BorderRadius.circular(100),
+                    child: Image.network(
+                      widget.documentSnapshot["image"],width: 75,height: 75,fit: BoxFit.cover,
+                      loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                        if (loadingProgress == null) {
+                          return child;
+                        }
+                        return Center(
+                          child: CircularProgressIndicator(
+                            value: loadingProgress.expectedTotalBytes != null
+                                ? loadingProgress.cumulativeBytesLoaded / (loadingProgress.expectedTotalBytes ?? 1)
+                                : null,
+                          ),
+                        );
+                      },
+                      errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
+                        return const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.error, color: Colors.red, size: 20),
+                            SizedBox(height: 10),
+                            Text('Failed load',
+                                style: TextStyle(fontSize: 10, color: Colors.black)),
+                          ],
+                        );
+                      },
                     ),
-                  );
-                },
-                errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
-                  return const Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  )
+                      : const CircleAvatar(radius: 40,
+                    backgroundColor: Colors.grey,
+                    child: Icon(Icons.person), // Placeholder icon
+                  ),
+                  sh20,
+               Row  (
+                   mainAxisAlignment: MainAxisAlignment.center,
+                   children:[ const Text(
+                    'Name:',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),sw20,
+                  Text(
+                    widget.documentSnapshot["studentName"],
+                    style: const TextStyle(fontSize: 16),
+                  ),]),
+                  sh16, Row(mainAxisAlignment: MainAxisAlignment.center,children:[const Text(
+                    'Id:',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ), sw20, Text(
+                    widget.documentSnapshot["studentId"],
+                    style: const TextStyle(fontSize: 16),
+                  ), ]) , sh16,
+               Row(mainAxisAlignment: MainAxisAlignment.center,children:[
+                  const Text(
+                    'Qualification:',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),sw20,Text(
+                widget.documentSnapshot["studyProgram"],
+                style: const TextStyle(fontSize: 16),
+              ),]),sh16,
+               Row ( mainAxisAlignment: MainAxisAlignment.center,children: [
+
+                  const Text(
+                    'Age:',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  sw20,
+                  Text(
+                    widget.documentSnapshot["age"],
+                    style: const TextStyle(fontSize: 16),
+                  ),]),
+                  sh16,
+                  Row(mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.error, color: Colors.red, size: 20),
-                      SizedBox(height: 10),
-                      Text('Failed load',
-                          style: TextStyle(fontSize: 10, color: Colors.black)),
+                      const Text(
+                        'Phone:',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ), sw10,Text(
+                        widget.documentSnapshot["phone"],
+                        style: const TextStyle(fontSize: 16),
+                      ),
                     ],
-                  );
-                },
-              ),
-            )
-                : const CircleAvatar(radius: 40,
-              backgroundColor: Colors.grey,
-              child: Icon(Icons.person), // Placeholder icon
-            ),
-          ),
-          Positioned(
-            top: MediaQuery.of(context).size.height/7.5,
-            left: 20,
-            right: 20,
-            bottom: 20,
-            child:  Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                sh20,
-                const Text(
-                  'Name:',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  widget.documentSnapshot["studentName"],
-                  style: const TextStyle(fontSize: 16),
-                ),
-                const SizedBox(height: 16), const Text(
-                  'Id:',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  widget.documentSnapshot["studentId"],
-                  style: const TextStyle(fontSize: 16),
-                ),   const SizedBox(height: 16),
-                const Text(
-                  'Qualification:',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  widget.documentSnapshot["studyProgram"],
-                  style: const TextStyle(fontSize: 16),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Age:',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  widget.documentSnapshot["age"],
-                  style: const TextStyle(fontSize: 16),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Phone:',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  widget.documentSnapshot["phone"],
-                  style: const TextStyle(fontSize: 16),
-                ),
+                  ),
 
-
-              ],
-            ),
-          ),
-          Positioned(
-            bottom: MediaQuery.of(context).size.height/4.5,
-            left: 25,
-            right: 25,
-            child:
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              ElevatedButton(
-
-                onPressed: () {
-                  navigateToDetail(
-                  documentSnapshot: widget.documentSnapshot,
-                  'Edit User',
-                );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
-                  foregroundColor: Colors.white
-                ),
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 10, horizontal: 50),
-                  child: Text('Edit'),
-                ),
-              ),
-              const SizedBox(width: 10,),
-              ElevatedButton(
-                onPressed: ()
-                  {
-                    showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: const Text("Delete...?"),
-                            content: const Text(
-                                "Are you sure?  will be deleted?"),
-                            actions: [
-                              TextButton(
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: const Text("Cancel")),
-                              TextButton(
-                                  onPressed: () async{
-                                    delete(context,name: widget.documentSnapshot["studentName"]);
-                                     Navigator.of(context).pop();
-                                  },
-                                  child: const Text("Delete")),
-                            ],
+                  sh50,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      ElevatedButton(
+                        onPressed: () {
+                          navigateToDetail(
+                            documentSnapshot: widget.documentSnapshot,
+                            'Edit User',
                           );
-                        });
+                        },
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.black,
+                            foregroundColor: Colors.white
+                        ),
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                          child: Text('Edit'),
+                        ),
+                      ),
+                      sw20,
+                      ElevatedButton(
+                        onPressed: ()
+                        {
+                          showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: const Text("Delete...?"),
+                                  content: const Text(
+                                      "Are you sure?  will be deleted?"),
+                                  actions: [
+                                    TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: const Text("Cancel")),
+                                    TextButton(
+                                        onPressed: () async{
+                                          delete(context,name: widget.documentSnapshot["studentName"]);
+                                        },
+                                        child: const Text("Delete")),
+                                  ],
+                                );
+                              });
 
 
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
-                  foregroundColor: Colors.white
-                ),
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 10, horizontal: 50),
-                  child: Text('Delete'),
-                ),
+                        },
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.black,
+                            foregroundColor: Colors.white
+                        ),
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                          child: Text('Delete'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ],
-          ),)
+          ),
+
+
         ],
 
       ),
@@ -216,7 +216,9 @@ class _UserDetailsState extends State<UserDetails> {
     try {
       showSnackbar(context, 'User Deleted Successfully');
        documentReference.delete();
-      Navigator.of(context).pop();
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx){
+        return const HomePage();
+      }));
 
       setState(() {
       });
@@ -225,7 +227,7 @@ class _UserDetailsState extends State<UserDetails> {
     }
   }
   void navigateToDetail(String title, {required documentSnapshot}) async {
-     await Navigator.pushReplacement(
+     await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) =>

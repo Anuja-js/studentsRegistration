@@ -7,7 +7,6 @@ import 'package:studentsregistration/customs/constants.dart';
 import 'package:studentsregistration/customs/custom_text.dart';
 import 'package:studentsregistration/screens/home_screen.dart';
 import 'package:studentsregistration/screens/sign_up.dart';
-import 'package:studentsregistration/services/auth_service.dart';
 
 import '../customs/logo_image.dart';
 
@@ -170,8 +169,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             await FirebaseAuth.instance.setPersistence(Persistence.LOCAL);
 
                            try{
-                             var check=    await FirebaseAuth.instance.signInWithEmailAndPassword(email: emailController.text, password: passwordController.text);
-                             print(check); login = true;
+                              await FirebaseAuth.instance.signInWithEmailAndPassword(email: emailController.text, password: passwordController.text);
+                             login = true;
                              saveSharedPreference(context, login);
                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(duration: Duration(seconds: 1),
                                content: Text('User login Succesfully'),

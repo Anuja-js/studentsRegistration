@@ -5,7 +5,7 @@ String text;
 Color color;
   @override
   Widget build(BuildContext context) {
-    return Text(text,style: TextStyle(
+    return Text(text,overflow: TextOverflow.ellipsis,maxLines: 1,style: TextStyle(
       color: color,fontSize: 12,fontWeight: FontWeight.normal
     ),);
   }

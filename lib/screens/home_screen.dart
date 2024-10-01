@@ -24,16 +24,18 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     fetchStudents();
     super.initState();
-
   }
 
   void fetchStudents() async {
     QuerySnapshot querySnapshot =
         await FirebaseFirestore.instance.collection("Students").get();
-    setState(() {
       userList = querySnapshot.docs;
       filteredList = userList;
-    });
+     if(mounted){
+       setState(() {
+
+       });
+     }
   }
 
   void filterSearch(String query) {
@@ -47,9 +49,9 @@ class _HomePageState extends State<HomePage> {
           .toList();
     } else {
       searchList = userList;
-    }
+    } filteredList = searchList;
     setState(() {
-      filteredList = searchList;
+
     });
   }
 
@@ -58,6 +60,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
+        automaticallyImplyLeading: false,
         title: TextCustom(text: "Students", color: white),
         backgroundColor: black,
         elevation: 0,
@@ -138,20 +141,20 @@ class _HomePageState extends State<HomePage> {
               ? filteredList.isEmpty
                   ? Center(
                       child: TextCustom(
-                      text: "StudentnNot found",
+                      text: "Student Not found",
                       color: black,
                     ))
                   : Center(child: getUsersList())
               : filteredList.isEmpty
                   ? Center(
-                      child: TextCustom(
-                          text: "StudentnNot found", color: black))
-                  : Center(child: getUserGridView())
+                      child:
+                          TextCustom(text: "Student Not found", color: black))
+                  : Center(child: getUserWrapView())
         ],
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: black,
-        foregroundColor:white,
+        foregroundColor: white,
         onPressed: () {
           Navigator.push(context, MaterialPageRoute(builder: (ctx) {
             return UserDetailsEdit(
@@ -168,92 +171,106 @@ class _HomePageState extends State<HomePage> {
 
   // Show users as a list view
   Widget getUsersList() {
-    return SizedBox(
-      width: MediaQuery.of(context).size.width / 2.2,
+    return SizedBox(width: MediaQuery.of(context).size.width/2.1,
       child: ListView.builder(
         physics: const ScrollPhysics(),
         scrollDirection: Axis.vertical,
         itemCount: filteredList.length, // Use filteredList
         itemBuilder: (BuildContext context, int position) {
           DocumentSnapshot documentSnapshot = filteredList[position];
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 15),
-            child: Card(
-              color: Colors.transparent,
-              elevation: 2.0,
-              child: ListTile(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20)),
-                leading: documentSnapshot["image"] != ""
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(100),
-                        child: Image.network(
-                          documentSnapshot["image"],
-                          width: 50,
-                          height: 50,
-                          fit: BoxFit.cover,
-                          loadingBuilder: (BuildContext context, Widget child,
-                              ImageChunkEvent? loadingProgress) {
-                            if (loadingProgress == null) {
-                              return child;
-                            }
-                            return Center(
-                              child: CircularProgressIndicator(
-                                value: loadingProgress.expectedTotalBytes !=
-                                        null
-                                    ? loadingProgress.cumulativeBytesLoaded /
-                                        (loadingProgress.expectedTotalBytes ??
-                                            1)
-                                    : null,
-                              ),
-                            );
-                          },
-                          errorBuilder: (BuildContext context, Object exception,
-                              StackTrace? stackTrace) {
-                            return  Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.error, color: Colors.red, size: 20),
-                                sh10,
-                                TextCustom(text: 'Failed load',
-                                     color: black),
-                              ],
-                            );
-                          },
+          return Card(
+            margin:  const EdgeInsets.symmetric(vertical: 18, horizontal: 15),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20)),
+            color: Colors.transparent,
+            elevation: 2.0,
+            child: SizedBox(height: MediaQuery.of(context).size.height/7,
+              child: InkWell(onTap: (){
+                Navigator.push(context, MaterialPageRoute(builder: (ctx){
+                  return UserDetails(documentSnapshot);
+                }));
+              },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 15),
+
+                  child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,crossAxisAlignment: CrossAxisAlignment.center,
+                      children:[
+                         documentSnapshot["image"] != ""
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(100),
+                            child: Image.network(
+                              documentSnapshot["image"],
+                              width: 50,
+                              height: 50,
+                              fit: BoxFit.cover,
+                              loadingBuilder: (BuildContext context, Widget child,
+                                  ImageChunkEvent? loadingProgress) {
+                                if (loadingProgress == null) {
+                                  return child;
+                                }
+                                return Center(
+                                  child: CircularProgressIndicator(
+                                    value: loadingProgress.expectedTotalBytes !=
+                                            null
+                                        ? loadingProgress.cumulativeBytesLoaded /
+                                            (loadingProgress.expectedTotalBytes ??
+                                                1)
+                                        : null,
+                                  ),
+                                );
+                              },
+                              errorBuilder: (BuildContext context, Object exception,
+                                  StackTrace? stackTrace) {
+                                return Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(Icons.error, color: Colors.red, size: 20),
+                                    sh10,
+                                    TextCustom(text: 'Failed load', color: black),
+                                  ],
+                                );
+                              },
+                            ),
+                          )
+                        : const CircleAvatar(
+                            radius: 30,
+                            backgroundColor: Colors.grey,
+                            child: Icon(Icons.person), // Placeholder icon
+                          ),sw10,
+                  SizedBox(width: MediaQuery.of(context).size.width/12,
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start,mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        TextCustom(
+                            text: documentSnapshot["studentName"],
+                            color: black
                         ),
-                      )
-                    : const CircleAvatar(
-                        radius: 30,
-                        backgroundColor: Colors.grey,
-                        child: Icon(Icons.person), // Placeholder icon
-                      ),
-                title: Text(
-                  documentSnapshot["studentName"],
-                  style: const TextStyle(color: Colors.black),
-                ),
-                subtitle: Text(documentSnapshot["studyProgram"]),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.edit, color: Colors.black54),
-                      onPressed: () {
-                        navigateToDetail('Edit User',
-                            documentSnapshot: documentSnapshot);
-                      },
+                        TextCustom(text:documentSnapshot["studyProgram"],color: Colors.black87,),
+                      ],
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.black54),
-                      onPressed: () {
-                        showDeleteDialog(context, documentSnapshot);
-                      },
-                    ),
-                  ],
+                  ),
+                        const Spacer(),
+                   Column(mainAxisAlignment: MainAxisAlignment.center,crossAxisAlignment: CrossAxisAlignment.end,
+                     children: [
+                       GestureDetector(
+                           onTap: (){
+                             navigateToDetail('Edit User',
+                                 documentSnapshot: documentSnapshot);
+
+                           },
+                           child: const Icon(Icons.edit, color: Colors.black54)),
+
+                        sh20,
+                        GestureDetector(
+                            onTap: (){
+                              showDeleteDialog(context, documentSnapshot);
+                            },
+                            child: const Icon(Icons.delete, color: Colors.black54)),
+
+                     ],
+                   )
+                    ]
+                  ),
                 ),
-                onTap: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => UserDetails(documentSnapshot)));
-                },
               ),
             ),
           );
@@ -263,91 +280,101 @@ class _HomePageState extends State<HomePage> {
   }
 
   // Show users as a grid view
-  Widget getUserGridView() {
-    return SizedBox(
-      width: MediaQuery.of(context).size.width / 1,
-      child: GridView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-        physics: const ScrollPhysics(),
-        scrollDirection: Axis.vertical,
-        itemCount: filteredList.length, // Use filteredList
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 5,
-          mainAxisSpacing: 10.0,
-          crossAxisSpacing: 10.0,
-          childAspectRatio: 0.75,
-        ),
-        itemBuilder: (BuildContext context, int position) {
+  // Show users as a wrap layout
+  Widget getUserWrapView() {
+    return SingleChildScrollView(
+      child: Wrap(
+        spacing: 10, // Horizontal spacing between items
+        runSpacing: 10, // Vertical spacing between items
+        children: List.generate(filteredList.length, (position) {
           DocumentSnapshot documentSnapshot = filteredList[position];
           return InkWell(
             onTap: () {
               Navigator.of(context).push(MaterialPageRoute(
                   builder: (context) => UserDetails(documentSnapshot)));
             },
-            child: Card(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20)),
-              color: Colors.transparent,
-              elevation: 2.0,
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    documentSnapshot["image"] != ""
-                        ? CircleAvatar(
-                            radius: 40,
-                            backgroundColor: Colors.grey, // Fallback color
-                            backgroundImage:
-                                NetworkImage(documentSnapshot["image"]),
-                          )
-                        : const CircleAvatar(
-                            radius: 40,
-                            backgroundColor: Colors.grey,
-                            child: Icon(Icons.person), // Placeholder icon
+            child: ConstrainedBox(constraints:const BoxConstraints(maxWidth: 300,
+            // minWidth: MediaQuery.of(context).size.width /7,
+            ) ,
+               // Dynamic width for each item
+              child: Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                color: Colors.transparent,
+                elevation: 2.0,
+                child: Padding(
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      documentSnapshot["image"] != ""
+                          ? CircleAvatar(
+                        radius: 40,
+                        backgroundColor: Colors.grey, // Fallback color
+                        backgroundImage:
+                        NetworkImage(documentSnapshot["image"]),
+                      )
+                          : const CircleAvatar(
+                        radius: 40,
+                        backgroundColor: Colors.grey,
+                        child: Icon(Icons.person), // Placeholder icon
+                      ),
+                     sh10, // Spacing between avatar and name
+                      Text(
+                        documentSnapshot["studentName"],
+                        style:  TextStyle(
+                          color: black,
+                          fontSize: 18,
+                        ),
+                        textAlign: TextAlign.center,
+                        overflow: TextOverflow.ellipsis, // Avoid overflow
+                        maxLines: 1, // Limit to 1 line
+                      ),
+                     sh10, // Spacing between name and study program
+                      Text(
+                        documentSnapshot["studyProgram"],
+                        style: TextStyle(
+                          color: black,
+                          fontSize: 15,
+                        ),
+                        textAlign: TextAlign.center,
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                      // const Spacer(),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.edit, color: Colors.black54),
+                            onPressed: () {
+                              navigateToDetail('Edit User',
+                                  documentSnapshot: documentSnapshot);
+                            },
                           ),
-                    sh20,
-                    Text(
-                      documentSnapshot["studentName"],
-                      style: const TextStyle(color: Colors.black, fontSize: 18),
-                    ),
-                    sh20,
-                    Text(
-                      documentSnapshot["studyProgram"],
-                      style:
-                          const TextStyle(color: Colors.black54, fontSize: 15),
-                    ),
-                    const Spacer(),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit, color: Colors.black54),
-                          onPressed: () {
-                            navigateToDetail('Edit User',
-                                documentSnapshot: documentSnapshot);
-                          },
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.black54),
-                          onPressed: () {
-                            showDeleteDialog(context, documentSnapshot);
-                          },
-                        ),
-                      ],
-                    ),
-                  ],
+                          IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.black54),
+                            onPressed: () {
+                              showDeleteDialog(context, documentSnapshot);
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
           );
-        },
+        }),
       ),
     );
   }
+
 
   void showDeleteDialog(
       BuildContext context, DocumentSnapshot documentSnapshot) {
@@ -367,7 +394,6 @@ class _HomePageState extends State<HomePage> {
             TextButton(
               onPressed: () {
                 _delete(context, name: documentSnapshot["studentName"]);
-                Navigator.of(context).pop();
               },
               child: const Text("Delete"),
             ),
@@ -378,31 +404,30 @@ class _HomePageState extends State<HomePage> {
   }
 
   void navigateToDetail(String title, {required documentSnapshot}) async {
-    bool result = await Navigator.push(
+   await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) =>
             UserDetailsEdit(documentSnapshot: documentSnapshot, title),
       ),
     );
-    if (result) {
-      setState(() {});
-    }
+
   }
 
   void _delete(BuildContext context, {required String name}) async {
     DocumentReference documentReference =
         FirebaseFirestore.instance.collection("Students").doc(name);
+
     try {
       await documentReference.delete();
-
+      filteredList.removeWhere((element) => element.id == documentReference.id);
       showSnackbar(context, 'User Deleted Successfully');
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx){
-        return HomePage();
-      }));
+      setState(() {});
     } catch (e) {
       showSnackbar(context, 'Error deleting user: $e');
     }
+
+    Navigator.of(context).pop();
   }
 
   void showSnackbar(BuildContext context, String message) {

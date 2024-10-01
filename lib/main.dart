@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:studentsregistration/screens/home_screen.dart';
 import 'package:studentsregistration/screens/splash_screen.dart';
 import 'firebase_options.dart';
+// ignore: constant_identifier_names
 const save_Key = "userLoggedIn";
 void main()async{
   WidgetsFlutterBinding.ensureInitialized();
