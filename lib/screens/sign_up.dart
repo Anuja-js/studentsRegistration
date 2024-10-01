@@ -1,7 +1,9 @@
 // ignore_for_file: use_build_context_synchronously
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:studentsregistration/customs/constants.dart';
+import 'package:studentsregistration/customs/custom_text.dart';
+import 'package:studentsregistration/customs/logo_image.dart';
 import 'package:studentsregistration/screens/login_screen.dart';
 import 'package:studentsregistration/services/auth_service.dart';
 
@@ -27,7 +29,7 @@ class _SignUpState extends State<SignUp> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: white,
       body: SafeArea(
         child: Stack(children: [
           Positioned(
@@ -49,22 +51,7 @@ class _SignUpState extends State<SignUp> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width / 3,
-                    child: Row(
-                      children: [
-                        Image.asset(
-                          "assets/images/splash.png",
-                          width: 50,
-                          height: 50,
-                        ),
-                        const SizedBox(
-                          width: 10,
-                        ),
-                        const Text("SingUp")
-                      ],
-                    ),
-                  ),
+               LogoImage(text: "SignUp"),
                   const SizedBox(
                     height: 20,
                   ),
@@ -86,17 +73,17 @@ class _SignUpState extends State<SignUp> {
                               });
                             },
                             icon: obscure
-                                ? const Icon(
+                                ?  Icon(
                                     Icons.visibility_outlined,
-                                    color: Colors.black,
+                                    color: black,
                                   )
-                                : const Icon(
+                                :  Icon(
                                     Icons.visibility_off_outlined,
-                                    color: Colors.black,
+                                    color: black,
                                   )),
                         labelText: "Enter Your Name",
-                        labelStyle: const TextStyle(
-                          color: Colors.black,
+                        labelStyle:  TextStyle(
+                          color: black,
                         ),
                         border: const OutlineInputBorder(
                             borderSide:
@@ -144,17 +131,17 @@ class _SignUpState extends State<SignUp> {
                               });
                             },
                             icon: obscureemail
-                                ? const Icon(
+                                ?  Icon(
                                     Icons.visibility_outlined,
-                                    color: Colors.black,
+                                    color: black,
                                   )
-                                : const Icon(
+                                :  Icon(
                                     Icons.visibility_off_outlined,
-                                    color: Colors.black,
+                                    color: black,
                                   )),
                         labelText: "Enter Your Email",
-                        labelStyle: const TextStyle(
-                          color: Colors.black,
+                        labelStyle:  TextStyle(
+                          color: black,
                         ),
                         border: const OutlineInputBorder(
                             borderSide:
@@ -202,17 +189,17 @@ class _SignUpState extends State<SignUp> {
                               });
                             },
                             icon: obscurepass
-                                ? const Icon(
+                                ?  Icon(
                                     Icons.visibility_outlined,
-                                    color: Colors.black,
+                                    color: black,
                                   )
-                                : const Icon(
+                                :  Icon(
                                     Icons.visibility_off_outlined,
-                                    color: Colors.black,
+                                    color: black,
                                   )),
                         labelText: "Enter Your Password",
-                        labelStyle: const TextStyle(
-                          color: Colors.black,
+                        labelStyle:  TextStyle(
+                          color: black,
                         ),
                         border: const OutlineInputBorder(
                             borderSide:
@@ -262,42 +249,37 @@ class _SignUpState extends State<SignUp> {
                       },
                       style: ButtonStyle(
                         backgroundColor:
-                            MaterialStateProperty.all(Colors.black),
+                            MaterialStateProperty.all(black),
                         foregroundColor:
-                            MaterialStateProperty.all(Colors.white),
+                            MaterialStateProperty.all(white),
                         padding: MaterialStateProperty.all(
-                          EdgeInsets.symmetric(
+                          const EdgeInsets.symmetric(
                             vertical: 2,
                             horizontal: 5,
                           ),
                         ),
                       ),
-                      child: const Text(
-                        "SignUp",
-                        style: TextStyle(color: Colors.white),
+                      child: TextCustom(
+                        text: "SignUp",color: white,
                       ),
                     ),
                   ),
-                  const SizedBox(
-                    height: 10,
-                  ),
+                  sh10,
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text("Do you have an account?"),
+                       TextCustom(text: "Do you have an account?",color: black,),
                       TextButton(
                           onPressed: () {
                             Navigator.push(context,
                                 MaterialPageRoute(builder: (ctx) {
-                              return LoginScreen();
+                              return const LoginScreen();
                             }));
                           },
-                          child: Text("LogIn"))
+                          child: TextCustom(text: "LogIn",color: Colors.indigoAccent,))
                     ],
                   ),
-                  const SizedBox(
-                    height: 10,
-                  ),
+                 sh10,
                 ],
               ),
             ),

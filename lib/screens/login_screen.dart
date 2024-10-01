@@ -3,16 +3,20 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:studentsregistration/customs/constants.dart';
+import 'package:studentsregistration/customs/custom_text.dart';
 import 'package:studentsregistration/screens/home_screen.dart';
 import 'package:studentsregistration/screens/sign_up.dart';
 import 'package:studentsregistration/services/auth_service.dart';
+
+import '../customs/logo_image.dart';
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
-
 class _LoginScreenState extends State<LoginScreen> {
   final nameController = TextEditingController();
   final passwordController = TextEditingController();
@@ -21,54 +25,43 @@ class _LoginScreenState extends State<LoginScreen> {
   final formkey = GlobalKey<FormState>();
   bool obscure = true;
   bool obscurepass = true;
-  String email="";
-  String password="";
-  String fullname="";
+  String email = "";
+  String password = "";
+  String fullname = "";
   bool login = false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      // appBar: AppBar(
-      //   backgroundColor:Colors.black,
-      //   title: const Text("Log In"),
-      // ),
       body: SafeArea(
-        child: Stack(
-          children:[
-            Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: Image.asset("assets/images/background.jpeg",fit: BoxFit.fill,)),
-
-            Positioned(
-              top: 100,
-              left: 10,
-              right: 10,
-              bottom: 10,
-
-              child: Form(
+        child: Stack(children: [
+          Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Image.asset(
+                "assets/images/background.jpeg",
+                fit: BoxFit.fill,
+              )),
+          Positioned(
+            top: 100,
+            left: 10,
+            right: 10,
+            bottom: 10,
+            child: Form(
               key: formkey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  login?SizedBox(height: 10,):
-                  SizedBox(width: MediaQuery.of(context).size.width/3,
-                    child: Row(
-                      children: [
-                        Image.asset("assets/images/splash.png",width: 50,height: 50,),
-                        const SizedBox(width: 10,),
-                        const Text("Log In")
-                      ],
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  SizedBox(width: MediaQuery.of(context).size.width/3,
-                    child: TextFormField(key: const ValueKey("email"),
+                  login
+                      ? sh10
+                      :  LogoImage(text: 'Login',),
+                  sh20,
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width / 3,
+                    child: TextFormField(
+                      key: const ValueKey("email"),
                       style: const TextStyle(
                         fontSize: 15.0,
                         fontWeight: FontWeight.bold,
@@ -84,20 +77,25 @@ class _LoginScreenState extends State<LoginScreen> {
                               });
                             },
                             icon: obscure
-                                ?const Icon(Icons.visibility_outlined,
-                              color: Colors.black,)
-                                :const Icon(
-                              Icons.visibility_off_outlined,
-                              color:Colors.black,
-                            )),
+                                ? const Icon(
+                                    Icons.visibility_outlined,
+                                    color: Colors.black,
+                                  )
+                                : const Icon(
+                                    Icons.visibility_off_outlined,
+                                    color: Colors.black,
+                                  )),
                         labelText: "Enter Your Email",
-                        labelStyle:const TextStyle(color: Colors.black,),
+                        labelStyle: const TextStyle(
+                          color: Colors.black,
+                        ),
                         border: const OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.grey, width: 2)),
-                        errorBorder:const OutlineInputBorder(
+                            borderSide:
+                                BorderSide(color: Colors.grey, width: 2)),
+                        errorBorder: const OutlineInputBorder(
                           borderSide: BorderSide(color: Colors.red, width: 2),
                         ),
-                        focusedBorder:const OutlineInputBorder(
+                        focusedBorder: const OutlineInputBorder(
                           borderSide: BorderSide(color: Colors.grey, width: 2),
                         ),
                       ),
@@ -107,18 +105,14 @@ class _LoginScreenState extends State<LoginScreen> {
                         } else {
                           return null;
                         }
-                      },onSaved: (value){
-                        setState(() {
-                          email=value!;
-                        });
                       },
                     ),
                   ),
-                  const SizedBox(
-                    height: 30,
-                  ),
-                  SizedBox(width: MediaQuery.of(context).size.width/3,
-                    child: TextFormField(key: const ValueKey("password"),
+                  sh20,
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width / 3,
+                    child: TextFormField(
+                      key: const ValueKey("password"),
                       style: const TextStyle(
                         fontSize: 15.0,
                         fontWeight: FontWeight.bold,
@@ -134,20 +128,25 @@ class _LoginScreenState extends State<LoginScreen> {
                               });
                             },
                             icon: obscurepass
-                                ?const Icon(Icons.visibility_outlined,
-                              color: Colors.black,)
-                                :const Icon(
-                              Icons.visibility_off_outlined,
-                              color:Colors.black,
-                            )),
+                                ? const Icon(
+                                    Icons.visibility_outlined,
+                                    color: Colors.black,
+                                  )
+                                : const Icon(
+                                    Icons.visibility_off_outlined,
+                                    color: Colors.black,
+                                  )),
                         labelText: "Enter Your Password",
-                        labelStyle:const TextStyle(color: Colors.black,),
+                        labelStyle: const TextStyle(
+                          color: Colors.black,
+                        ),
                         border: const OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.grey, width: 2)),
-                        errorBorder:const OutlineInputBorder(
+                            borderSide:
+                                BorderSide(color: Colors.grey, width: 2)),
+                        errorBorder: const OutlineInputBorder(
                           borderSide: BorderSide(color: Colors.red, width: 2),
                         ),
-                        focusedBorder:const OutlineInputBorder(
+                        focusedBorder: const OutlineInputBorder(
                           borderSide: BorderSide(color: Colors.grey, width: 2),
                         ),
                       ),
@@ -157,78 +156,87 @@ class _LoginScreenState extends State<LoginScreen> {
                         } else {
                           return null;
                         }
-                      },onSaved: (value){
-                        setState(() {
-                          password=value!;
-                        });
                       },
                     ),
                   ),
-
                   const Spacer(),
-                  SizedBox(width: MediaQuery.of(context).size.width/3,height: 50,
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width / 3,
+                    height: 50,
                     child: ElevatedButton(
-                      onPressed: () async{
+                      onPressed: () async {
                         if (formkey.currentState!.validate()) {
                           formkey.currentState!.save();
-                          // await FirebaseAuth.instance
-                          //     .signInWithEmailAndPassword(
-                          //   email: emailController.text.trim(),
-                          //   password: passwordController.text.trim(),
-                          // );
-                        //   await FirebaseAuth.instance.setPersistence(Persistence.LOCAL);
-                        AuthServices.signinUser(email,password,context);
-                        login=true;
-                         saveSharedPreference(context,login);
-                        Navigator.push(context, MaterialPageRoute(builder: (ctx){
-                            return HomePage();
-                          }));
-                        } else {
-                          login=false;
-                           if (kDebugMode) {
-                             print("Data Empty");
+                            await FirebaseAuth.instance.setPersistence(Persistence.LOCAL);
+
+                           try{
+                             var check=    await FirebaseAuth.instance.signInWithEmailAndPassword(email: emailController.text, password: passwordController.text);
+                             print(check); login = true;
+                             saveSharedPreference(context, login);
+                             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(duration: Duration(seconds: 1),
+                               content: Text('User login Succesfully'),
+                             ));
+                             Navigator.push(context,
+                                 MaterialPageRoute(builder: (ctx) {
+                                   return const HomePage();
+                                 }));
+                           }catch (e){
+                             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(duration: Duration(seconds: 1),
+                               content: Text('User not found!'),
+                             ));
                            }
+
+                        } else {
+                          login = false;
+                          if (kDebugMode) {
+                            print("Data Empty");
+                          }
                         }
                         // checkLogIn(context);
                       },
                       style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all(Colors.black),
-                        foregroundColor:MaterialStateProperty.all(Colors.white),
-                        padding: MaterialStateProperty.all(
-                          EdgeInsets.symmetric(
-                              vertical: 2,
-                              horizontal: 5,
-                          )
-                        ),
+                        backgroundColor:
+                            MaterialStateProperty.all(Colors.black),
+                        foregroundColor:
+                            MaterialStateProperty.all(Colors.white),
+                        padding: MaterialStateProperty.all(const EdgeInsets.symmetric(
+                          vertical: 2,
+                          horizontal: 5,
+                        )),
                       ),
-                      child:  Text("LogIn",style: TextStyle(color: Colors.white),),
+                      child: TextCustom(text: "LogIn", color: Colors.white),
                     ),
                   ),
-                  const SizedBox(height: 10,),
-                  Row(mainAxisAlignment: MainAxisAlignment.center,
+                  sh10,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text("Don't have an account?"),
-                     TextButton(onPressed: (){
-                       Navigator.push(context, MaterialPageRoute(builder: (ctx){
-                         return SignUp();
-                       }));
-                     }, child: Text("SignUp"))
+                      TextCustom(
+                          text: "Don't have an account?", color: Colors.black),
+                      TextButton(
+                          onPressed: () {
+                            Navigator.push(context,
+                                MaterialPageRoute(builder: (ctx) {
+                              return const SignUp();
+                            }));
+                          },
+                          child: TextCustom(
+                            text: "SignUp",
+                            color: Colors.indigoAccent,
+                          ))
                     ],
-                  ),
-                  const SizedBox(height: 10,),
+                  ),sh10,
                 ],
               ),
-          ),
             ),
-            ]
-        ),
-
+          ),
+        ]),
       ),
     );
   }
   void saveSharedPreference(context, bool login) async {
     final shared = await SharedPreferences.getInstance();
     await shared.setBool('isLoggedIn', login);
-
   }
 }
+

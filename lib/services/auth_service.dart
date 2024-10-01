@@ -42,7 +42,7 @@ class AuthServices {
       ));
     }
   }
-  static Future<void> signinUser(
+ static   signinUser(
       String email, String password, BuildContext context) async {
     try {
       // Sign in the user using Firebase Authentication
@@ -52,25 +52,24 @@ class AuthServices {
       );
 
       // Show a success message when the user logs in
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+    await  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('You are Logged-in!'),
+
       ));
+      return true;
     } on FirebaseAuthException catch (e) {
       // Handle different error cases for Firebase Auth exceptions
       if (e.code == 'user-not-found') {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      await  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('No user found with this email!'),
         ));
+        return false;
       } else if (e.code == 'wrong-password') {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      await  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('Password did not match!'),
         ));
+        return false;
       }
-    } catch (e) {
-      // Handle any other errors
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(e.toString()),
-      ));
     }
   }
 }

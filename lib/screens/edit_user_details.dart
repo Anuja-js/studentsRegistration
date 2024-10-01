@@ -102,160 +102,163 @@ class UserDetailsEditState extends State<UserDetailsEdit> {
               fit: BoxFit.fill,
             ),
           ),
-          Positioned.fill(
-            child: Form(
-              key: formKey,
-              child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 30),
-                children: <Widget>[
-                  InkWell(
-                    onTap: () async {
-                      try {
-                        FilePickerResult? result =
+          SizedBox(
+              width: MediaQuery.of(context).size.width,
+              child: SizedBox(
+                width: MediaQuery.of(context).size.width / 3,
+              )), Center(
+                child: SizedBox(width: MediaQuery.of(context).size.width/3,
+                child: Form(
+                  key: formKey,
+                  child: ListView(
+                    padding: const EdgeInsets.symmetric(horizontal: 30),
+                    children: <Widget>[
+                      InkWell(
+                        onTap: () async {
+                          try {
+                            FilePickerResult? result =
                             await FilePicker.platform.pickFiles(
-                          type: FileType.image,
-                          allowMultiple: false,
-                          withData: true, // Ensure byte data is included
-                        );
+                              type: FileType.image,
+                              allowMultiple: false,
+                              withData: true, // Ensure byte data is included
+                            );
 
-                        if (result != null) {
-                          imageBytes = result.files.first
-                              .bytes; // Handle image as bytes (for both web and mobile)
+                            if (result != null) {
+                              imageBytes = result.files.first
+                                  .bytes; // Handle image as bytes (for both web and mobile)
 
-                          setState(() {});
-                        } else {
-                          print("User canceled the picker");
-                        }
-                      } catch (e) {
-                        print("Error during file picking: $e");
-                      }
-                    },
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        sh10,
-                        CircleAvatar(
-                          backgroundColor: Colors.black,
-                          radius: 50,
-                          child: widget.appBarTitle == "Edit User"
-                              ? image != ""
+                              setState(() {});
+                            } else {
+                              print("User canceled the picker");
+                            }
+                          } catch (e) {
+                            print("Error during file picking: $e");
+                          }
+                        },
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            sh10,
+                            CircleAvatar(
+                              backgroundColor: Colors.black,
+                              radius: 50,
+                              child: widget.appBarTitle == "Edit User"
+                                  ? image != ""
                                   ? SizedBox(
-                                      width: 100,
-                                      height: 100,
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(50),
-                                        child: Image.network(
-                                          widget.documentSnapshot["image"]!,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                    )
+                                width: 100,
+                                height: 100,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(50),
+                                  child: Image.network(
+                                    widget.documentSnapshot["image"]!,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              )
                                   : const Icon(Icons.camera_alt_outlined,
-                                      color: Colors.white)
-                              : imageBytes != null
+                                  color: Colors.white)
+                                  : imageBytes != null
                                   ? SizedBox(
-                                      width: 100,
-                                      height: 100,
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(50),
-                                        child: Image.memory(
-                                          imageBytes!,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                    )
+                                width: 100,
+                                height: 100,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(50),
+                                  child: Image.memory(
+                                    imageBytes!,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              )
                                   : const Icon(Icons.camera_alt_outlined,
-                                      color: Colors.white),
+                                  color: Colors.white),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                      buildTextFormField(nameController, 'Name'),
+                      buildTextFormField(descriptionController, 'Student ID'),
+                      buildTextFormField(
+                        qualificationController,
+                        'Study Program',
+                      ),
+                      buildTextFormField(ageController, 'Age',
+                          keyboardType: TextInputType.number),
+                      buildTextFormField(phoneController, 'Phone',
+                          keyboardType: TextInputType.number),
+                      const SizedBox(height: 55),
+
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black,
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 15, horizontal: 20),
+                        ),
+                        onPressed: () async {
+                          if (formKey.currentState!.validate()) {
+                            DocumentReference documentReference = FirebaseFirestore
+                                .instance
+                                .collection("Students")
+                                .doc(nameController.text);
+
+                            String imageUrl = "";
+
+                            if (imageBytes != null) {
+                              imageUrl = await uploadImage(imageBytes!);
+                            }
+                            Map<String, dynamic> student = {
+                              "studentName": nameController.text,
+                              "studentId": descriptionController.text,
+                              "studyProgram": qualificationController.text,
+                              "age": ageController.text,
+                              "phone": phoneController.text,
+                              "image": imageUrl
+                            };
+
+                            if (widget.appBarTitle == "Edit User") {
+                              try {
+                                await FirebaseFirestore.instance
+                                    .collection("Students")
+                                    .doc(widget.documentSnapshot["studentName"])
+                                    .delete();
+
+                                await documentReference.set(student).whenComplete(() {
+                                  print("Student data updated");
+                                });
+                              } catch (e) {
+                                print("Error updating data: $e");
+                              }
+                            } else {
+                              try {
+                                await documentReference.set(student).whenComplete(() {
+                                  print("Student data saved");
+                                });
+                              } catch (e) {
+                                print(
+                                    "Error saving data: $e"); // Detailed error logging
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                    content: Text('Error saving student: $e')));
+                              }
+                            }
+                            ScaffoldMessenger.of(context).showSnackBar( SnackBar(duration: Duration(seconds: 1),
+                                content:widget.appBarTitle == 'Add Student' ?Text('Student Added Succesfully'):Text('Student updated Succesfully')
+                            ));
+                            Navigator.pushReplacement(context,
+                                MaterialPageRoute(builder: (ctx) {
+                                  return const HomePage();
+                                }));
+                          }
+                        },
+                        child: Text(widget.appBarTitle == 'Add Student'
+                            ? 'Save Student'
+                            : 'Update Student'),
+                      ),
+                    ],
                   ),
-                  buildTextFormField(nameController, 'Name'),
-                  buildTextFormField(descriptionController, 'Student ID'),
-                  buildTextFormField(
-                    qualificationController,
-                    'Study Program',
-                  ),
-                  buildTextFormField(ageController, 'Age',
-                      keyboardType: TextInputType.number),
-                  buildTextFormField(phoneController, 'Phone',
-                      keyboardType: TextInputType.number),
-                  const SizedBox(height: 55),
-                ],
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 20,
-            left: 15,right: 50,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 15, horizontal: 20),
-                  ),
-                  onPressed: () async {
-                    if (formKey.currentState!.validate()) {
-                      DocumentReference documentReference = FirebaseFirestore
-                          .instance
-                          .collection("Students")
-                          .doc(nameController.text);
-
-                      String imageUrl = "";
-
-                      if (imageBytes != null) {
-                        imageUrl = await uploadImage(imageBytes!);
-                      }
-                      Map<String, dynamic> student = {
-                        "studentName": nameController.text,
-                        "studentId": descriptionController.text,
-                        "studyProgram": qualificationController.text,
-                        "age": ageController.text,
-                        "phone": phoneController.text,
-                        "image": imageUrl
-                      };
-
-                      if (widget.appBarTitle == "Edit User") {
-                        try {
-                          await FirebaseFirestore.instance
-                              .collection("Students")
-                              .doc(widget.documentSnapshot["studentName"])
-                              .delete();
-
-                          await documentReference.set(student).whenComplete(() {
-                            print("Student data updated");
-                          });
-                        } catch (e) {
-                          print("Error updating data: $e");
-                        }
-                      } else {
-                        try {
-                          await documentReference.set(student).whenComplete(() {
-                            print("Student data saved");
-                          });
-                        } catch (e) {
-                          print(
-                              "Error saving data: $e"); // Detailed error logging
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: Text('Error saving student: $e')));
-                        }
-                      }
-
-                      Navigator.pushReplacement(context,
-                          MaterialPageRoute(builder: (ctx) {
-                        return const HomePage();
-                      }));
-                    }
-                  },
-                  child: Text(widget.appBarTitle == 'Add Student'
-                      ? 'Save Student'
-                      : 'Update Student'),
                 ),
-              ],
-            ),
-          ),
+                            ),
+
+              ),
+
+
         ],
       ),
     );
@@ -265,34 +268,36 @@ class UserDetailsEditState extends State<UserDetailsEdit> {
       {TextInputType keyboardType = TextInputType.text}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 15),
-      child: TextFormField(
-        controller: controller,
-        style: const TextStyle(fontSize: 18.0),
-        keyboardType: keyboardType,
-        onChanged: (value) {},
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: const TextStyle(color: Colors.black),
-          fillColor: Colors.grey,
-          border: const OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.grey, width: 2),
+      child: SizedBox(width: MediaQuery.of(context).size.width/3,
+        child: TextFormField(
+          controller: controller,
+          style: const TextStyle(fontSize: 18.0),
+          keyboardType: keyboardType,
+          onChanged: (value) {},
+          decoration: InputDecoration(
+            labelText: label,
+            labelStyle: const TextStyle(color: Colors.black),
+            fillColor: Colors.grey,
+            border: const OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.grey, width: 2),
+            ),
+            focusedBorder: const OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.grey, width: 2),
+            ),
           ),
-          focusedBorder: const OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.grey, width: 2),
-          ),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return "Please enter $label";
+            }
+            if (label == 'Phone' && !RegExp(r'^\d{10}$').hasMatch(value)) {
+              return "Phone number must be 10 digits";
+            }
+            if (label == 'Age' && !RegExp(r'^\d{1,3}$').hasMatch(value)) {
+              return "Age must be a valid number";
+            }
+            return null;
+          },
         ),
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return "Please enter $label";
-          }
-          if (label == 'Phone' && !RegExp(r'^\d{10}$').hasMatch(value)) {
-            return "Phone number must be 10 digits";
-          }
-          if (label == 'Age' && !RegExp(r'^\d{1,3}$').hasMatch(value)) {
-            return "Age must be a valid number";
-          }
-          return null;
-        },
       ),
     );
   }

@@ -3,15 +3,18 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:studentsregistration/customs/custom_text.dart';
 import 'package:studentsregistration/screens/edit_user_details.dart';
 import 'package:studentsregistration/screens/user_detail.dart';
 import '../customs/constants.dart';
 import 'login_screen.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
   @override
   State<HomePage> createState() => _HomePageState();
 }
+
 class _HomePageState extends State<HomePage> {
   bool isPress = true;
   TextEditingController textControl = TextEditingController();
@@ -19,9 +22,11 @@ class _HomePageState extends State<HomePage> {
   List<DocumentSnapshot> filteredList = [];
   @override
   void initState() {
-    super.initState();
     fetchStudents();
+    super.initState();
+
   }
+
   void fetchStudents() async {
     QuerySnapshot querySnapshot =
         await FirebaseFirestore.instance.collection("Students").get();
@@ -30,6 +35,7 @@ class _HomePageState extends State<HomePage> {
       filteredList = userList;
     });
   }
+
   void filterSearch(String query) {
     List<DocumentSnapshot> searchList = [];
     if (query.isNotEmpty) {
@@ -50,12 +56,11 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(centerTitle: true,
-        title: const Text(
-          "Students",
-          style: TextStyle(color: Colors.white),
-        ),
-        backgroundColor: Colors.black,elevation: 0,
+      appBar: AppBar(
+        centerTitle: true,
+        title: TextCustom(text: "Students", color: white),
+        backgroundColor: black,
+        elevation: 0,
         actions: [
           IconButton(
               onPressed: () {
@@ -64,37 +69,39 @@ class _HomePageState extends State<HomePage> {
                 });
               },
               icon: isPress
-                  ? const Icon(
+                  ? Icon(
                       Icons.grid_4x4_outlined,
-                      color: Colors.white,
+                      color: white,
                     )
-                  : const Icon(Icons.list_alt_outlined, color: Colors.white)),
+                  : Icon(Icons.list_alt_outlined, color: white)),
           IconButton(
             onPressed: () async {
               logout(context);
             },
-            icon: const Icon(Icons.logout, color: Colors.white),
+            icon: Icon(Icons.logout, color: white),
           ),
         ],
         bottom: PreferredSize(
             preferredSize: const Size.fromHeight(60.0),
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-              child: Row(mainAxisAlignment: MainAxisAlignment.center,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SizedBox(width: MediaQuery.of(context).size.width/2.2,
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width / 2.2,
                     child: TextField(
                       controller: textControl,
                       onChanged: (value) {
                         filterSearch(value);
                       },
-                      style: const TextStyle(color: Colors.white),
-                      decoration: const InputDecoration(
+                      style: TextStyle(color: white),
+                      decoration: InputDecoration(
                         hintText: 'Search...',
-                        border: OutlineInputBorder(
+                        border: const OutlineInputBorder(
                           borderSide: BorderSide(color: Colors.grey, width: 2),
                         ),
-                        focusedBorder: OutlineInputBorder(
+                        focusedBorder: const OutlineInputBorder(
                           borderSide: BorderSide(
                             color: Colors.grey,
                             width: 2,
@@ -102,7 +109,7 @@ class _HomePageState extends State<HomePage> {
                         ),
                         prefixIcon: Icon(
                           Icons.search,
-                          color: Colors.white,
+                          color: white,
                         ),
                       ),
                     ),
@@ -122,15 +129,29 @@ class _HomePageState extends State<HomePage> {
                 "assets/images/background.jpeg",
                 fit: BoxFit.fill,
               )),
-          Container(width: MediaQuery.of(context).size.width,
-            child:SizedBox(width: MediaQuery.of(context).size.width/3,)
-          ),
-          isPress ? Center(child: getUsersList()) : Center(child: getUserGridView())
+          SizedBox(
+              width: MediaQuery.of(context).size.width,
+              child: SizedBox(
+                width: MediaQuery.of(context).size.width / 3,
+              )),
+          isPress
+              ? filteredList.isEmpty
+                  ? Center(
+                      child: TextCustom(
+                      text: "StudentnNot found",
+                      color: black,
+                    ))
+                  : Center(child: getUsersList())
+              : filteredList.isEmpty
+                  ? Center(
+                      child: TextCustom(
+                          text: "StudentnNot found", color: black))
+                  : Center(child: getUserGridView())
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
+        backgroundColor: black,
+        foregroundColor:white,
         onPressed: () {
           Navigator.push(context, MaterialPageRoute(builder: (ctx) {
             return UserDetailsEdit(
@@ -147,7 +168,8 @@ class _HomePageState extends State<HomePage> {
 
   // Show users as a list view
   Widget getUsersList() {
-    return SizedBox(width: MediaQuery.of(context).size.width/2.2,
+    return SizedBox(
+      width: MediaQuery.of(context).size.width / 2.2,
       child: ListView.builder(
         physics: const ScrollPhysics(),
         scrollDirection: Axis.vertical,
@@ -162,37 +184,46 @@ class _HomePageState extends State<HomePage> {
               child: ListTile(
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20)),
-                leading: documentSnapshot["image"]!= ""
-                    ? ClipRRect(borderRadius: BorderRadius.circular(100),
-                      child: Image.network(
-                                      documentSnapshot["image"],width: 50,height: 50,fit: BoxFit.cover,
-                                      loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
-                      if (loadingProgress == null) {
-                        return child;
-                      }
-                      return Center(
-                        child: CircularProgressIndicator(
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded / (loadingProgress.expectedTotalBytes ?? 1)
-                              : null,
+                leading: documentSnapshot["image"] != ""
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(100),
+                        child: Image.network(
+                          documentSnapshot["image"],
+                          width: 50,
+                          height: 50,
+                          fit: BoxFit.cover,
+                          loadingBuilder: (BuildContext context, Widget child,
+                              ImageChunkEvent? loadingProgress) {
+                            if (loadingProgress == null) {
+                              return child;
+                            }
+                            return Center(
+                              child: CircularProgressIndicator(
+                                value: loadingProgress.expectedTotalBytes !=
+                                        null
+                                    ? loadingProgress.cumulativeBytesLoaded /
+                                        (loadingProgress.expectedTotalBytes ??
+                                            1)
+                                    : null,
+                              ),
+                            );
+                          },
+                          errorBuilder: (BuildContext context, Object exception,
+                              StackTrace? stackTrace) {
+                            return  Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.error, color: Colors.red, size: 20),
+                                sh10,
+                                TextCustom(text: 'Failed load',
+                                     color: black),
+                              ],
+                            );
+                          },
                         ),
-                      );
-                                      },
-                                      errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
-                      print(exception);
-                      return Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.error, color: Colors.red, size: 20),
-                          SizedBox(height: 10),
-                          Text('Failed load',
-                              style: TextStyle(fontSize: 10, color: Colors.black)),
-                        ],
-                      );
-                                      },
-                                    ),
-                    )
-                    : const CircleAvatar(radius: 30,
+                      )
+                    : const CircleAvatar(
+                        radius: 30,
                         backgroundColor: Colors.grey,
                         child: Icon(Icons.person), // Placeholder icon
                       ),
@@ -233,7 +264,8 @@ class _HomePageState extends State<HomePage> {
 
   // Show users as a grid view
   Widget getUserGridView() {
-    return SizedBox(width: MediaQuery.of(context).size.width/1,
+    return SizedBox(
+      width: MediaQuery.of(context).size.width / 1,
       child: GridView.builder(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
         physics: const ScrollPhysics(),
@@ -253,24 +285,27 @@ class _HomePageState extends State<HomePage> {
                   builder: (context) => UserDetails(documentSnapshot)));
             },
             child: Card(
-              shape:
-                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20)),
               color: Colors.transparent,
               elevation: 2.0,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     documentSnapshot["image"] != ""
-                        ? CircleAvatar(radius: 40,
+                        ? CircleAvatar(
+                            radius: 40,
                             backgroundColor: Colors.grey, // Fallback color
                             backgroundImage:
                                 NetworkImage(documentSnapshot["image"]),
                           )
-                        : const CircleAvatar(radius: 40,
+                        : const CircleAvatar(
+                            radius: 40,
                             backgroundColor: Colors.grey,
                             child: Icon(Icons.person), // Placeholder icon
                           ),
@@ -282,7 +317,8 @@ class _HomePageState extends State<HomePage> {
                     sh20,
                     Text(
                       documentSnapshot["studyProgram"],
-                      style: const TextStyle(color: Colors.black54, fontSize: 15),
+                      style:
+                          const TextStyle(color: Colors.black54, fontSize: 15),
                     ),
                     const Spacer(),
                     Row(
@@ -331,7 +367,7 @@ class _HomePageState extends State<HomePage> {
             TextButton(
               onPressed: () {
                 _delete(context, name: documentSnapshot["studentName"]);
-                Navigator.of(context).pop(); // Dismiss dialog after deletion
+                Navigator.of(context).pop();
               },
               child: const Text("Delete"),
             ),
@@ -358,19 +394,12 @@ class _HomePageState extends State<HomePage> {
     DocumentReference documentReference =
         FirebaseFirestore.instance.collection("Students").doc(name);
     try {
-      showSnackbar(context, 'User Deleted Successfully');
       await documentReference.delete();
-      userList.removeWhere((namedata) {
-        // ignore: unrelated_type_equality_checks
-        return namedata == name;
-      });
-      filteredList.removeWhere((namedata) {
-        // ignore: unrelated_type_equality_checks
-        return namedata == name; // Condition to remove 'Bob'
-      });
-      setState(() {
 
-      });
+      showSnackbar(context, 'User Deleted Successfully');
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx){
+        return HomePage();
+      }));
     } catch (e) {
       showSnackbar(context, 'Error deleting user: $e');
     }

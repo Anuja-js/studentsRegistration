@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:studentsregistration/customs/constants.dart';
 import 'package:studentsregistration/screens/edit_user_details.dart';
 
 class UserDetails extends StatefulWidget {
@@ -38,13 +39,14 @@ class _UserDetailsState extends State<UserDetails> {
               right: 0,
               bottom: 0,
               child: Image.asset("assets/images/background.jpeg",fit: BoxFit.fill,)),
+
           Positioned(
-            left:  MediaQuery.of(context).size.width/2.55, top: 20,
+            left:  10, top: 20,
 
             child:   widget.documentSnapshot["image"]!= ""
                 ? ClipRRect(borderRadius: BorderRadius.circular(100),
               child: Image.network(
-                widget.documentSnapshot["image"],width: 50,height: 50,fit: BoxFit.cover,
+                widget.documentSnapshot["image"],width: 75,height: 75,fit: BoxFit.cover,
                 loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
                   if (loadingProgress == null) {
                     return child;
@@ -70,7 +72,7 @@ class _UserDetailsState extends State<UserDetails> {
                 },
               ),
             )
-                : const CircleAvatar(
+                : const CircleAvatar(radius: 40,
               backgroundColor: Colors.grey,
               child: Icon(Icons.person), // Placeholder icon
             ),
@@ -83,6 +85,7 @@ class _UserDetailsState extends State<UserDetails> {
             child:  Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                sh20,
                 const Text(
                   'Name:',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
