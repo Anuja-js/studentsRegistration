@@ -22,7 +22,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final emailController = TextEditingController();
 
   final formkey = GlobalKey<FormState>();
-  bool obscure = true;
+
   bool obscurepass = true;
   String email = "";
   String password = "";
@@ -57,8 +57,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       ? sh10
                       :  LogoImage(text: 'Login',),
                   sh20,
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width / 3,
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 400),
                     child: TextFormField(
                       key: const ValueKey("email"),
                       style: const TextStyle(
@@ -66,35 +66,19 @@ class _LoginScreenState extends State<LoginScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                       controller: emailController,
-                      obscureText: obscure,
                       keyboardType: TextInputType.emailAddress,
-                      decoration: InputDecoration(
-                        suffixIcon: IconButton(
-                            onPressed: () {
-                              setState(() {
-                                obscure = !obscure;
-                              });
-                            },
-                            icon: obscure
-                                ? const Icon(
-                                    Icons.visibility_outlined,
-                                    color: Colors.black,
-                                  )
-                                : const Icon(
-                                    Icons.visibility_off_outlined,
-                                    color: Colors.black,
-                                  )),
-                        labelText: "Enter Your Email",
-                        labelStyle: const TextStyle(
+                      decoration: const InputDecoration(
+                       labelText: "Enter Your Email",
+                        labelStyle: TextStyle(
                           color: Colors.black,
                         ),
-                        border: const OutlineInputBorder(
+                        border: OutlineInputBorder(
                             borderSide:
                                 BorderSide(color: Colors.grey, width: 2)),
-                        errorBorder: const OutlineInputBorder(
+                        errorBorder: OutlineInputBorder(
                           borderSide: BorderSide(color: Colors.red, width: 2),
                         ),
-                        focusedBorder: const OutlineInputBorder(
+                        focusedBorder: OutlineInputBorder(
                           borderSide: BorderSide(color: Colors.grey, width: 2),
                         ),
                       ),
@@ -108,8 +92,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   sh20,
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width / 3,
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 400),
                     child: TextFormField(
                       key: const ValueKey("password"),
                       style: const TextStyle(
@@ -159,9 +143,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   const Spacer(),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width / 3,
-                    height: 50,
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 400,maxHeight: 55,minWidth: 120),
                     child: ElevatedButton(
                       onPressed: () async {
                         if (formkey.currentState!.validate()) {
@@ -207,23 +190,25 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   sh10,
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      TextCustom(
-                          text: "Don't have an account?", color: Colors.black),
-                      TextButton(
-                          onPressed: () {
-                            Navigator.push(context,
-                                MaterialPageRoute(builder: (ctx) {
-                              return const SignUp();
-                            }));
-                          },
-                          child: TextCustom(
-                            text: "SignUp",
-                            color: Colors.indigoAccent,
-                          ))
-                    ],
+                  ConstrainedBox(constraints: const BoxConstraints(maxWidth: 400),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        TextCustom(
+                            text: "Don't have an account?", color: Colors.black),
+                        TextButton(
+                            onPressed: () {
+                              Navigator.push(context,
+                                  MaterialPageRoute(builder: (ctx) {
+                                return const SignUp();
+                              }));
+                            },
+                            child: TextCustom(
+                              text: "SignUp",
+                              color: Colors.indigoAccent,
+                            ))
+                      ],
+                    ),
                   ),sh10,
                 ],
               ),

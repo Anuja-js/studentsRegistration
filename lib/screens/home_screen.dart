@@ -29,13 +29,11 @@ class _HomePageState extends State<HomePage> {
   void fetchStudents() async {
     QuerySnapshot querySnapshot =
         await FirebaseFirestore.instance.collection("Students").get();
-      userList = querySnapshot.docs;
-      filteredList = userList;
-     if(mounted){
-       setState(() {
-
-       });
-     }
+    userList = querySnapshot.docs;
+    filteredList = userList;
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   void filterSearch(String query) {
@@ -49,10 +47,9 @@ class _HomePageState extends State<HomePage> {
           .toList();
     } else {
       searchList = userList;
-    } filteredList = searchList;
-    setState(() {
-
-    });
+    }
+    filteredList = searchList;
+    setState(() {});
   }
 
   @override
@@ -61,7 +58,10 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         centerTitle: true,
         automaticallyImplyLeading: false,
-        title: TextCustom(text: "Students", color: white),
+        title: Text(
+          "Students",
+          style: TextStyle(color: white, fontSize: 20),
+        ),
         backgroundColor: black,
         elevation: 0,
         actions: [
@@ -88,36 +88,31 @@ class _HomePageState extends State<HomePage> {
             preferredSize: const Size.fromHeight(60.0),
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width / 2.2,
-                    child: TextField(
-                      controller: textControl,
-                      onChanged: (value) {
-                        filterSearch(value);
-                      },
-                      style: TextStyle(color: white),
-                      decoration: InputDecoration(
-                        hintText: 'Search...',
-                        border: const OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.grey, width: 2),
-                        ),
-                        focusedBorder: const OutlineInputBorder(
-                          borderSide: BorderSide(
-                            color: Colors.grey,
-                            width: 2,
-                          ),
-                        ),
-                        prefixIcon: Icon(
-                          Icons.search,
-                          color: white,
-                        ),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: 600),
+                child: TextField(
+                  controller: textControl,
+                  onChanged: (value) {
+                    filterSearch(value);
+                  },
+                  style: TextStyle(color: white),
+                  decoration: InputDecoration(
+                    hintText: 'Search...',
+                    border: const OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey, width: 2),
+                    ),
+                    focusedBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Colors.grey,
+                        width: 2,
                       ),
                     ),
+                    prefixIcon: Icon(
+                      Icons.search,
+                      color: white,
+                    ),
                   ),
-                ],
+                ),
               ),
             )),
       ),
@@ -133,10 +128,8 @@ class _HomePageState extends State<HomePage> {
                 fit: BoxFit.fill,
               )),
           SizedBox(
-              width: MediaQuery.of(context).size.width,
-              child: SizedBox(
-                width: MediaQuery.of(context).size.width / 3,
-              )),
+            width: MediaQuery.of(context).size.width,
+          ),
           isPress
               ? filteredList.isEmpty
                   ? Center(
@@ -171,7 +164,8 @@ class _HomePageState extends State<HomePage> {
 
   // Show users as a list view
   Widget getUsersList() {
-    return SizedBox(width: MediaQuery.of(context).size.width/2.1,
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: 600),
       child: ListView.builder(
         physics: const ScrollPhysics(),
         scrollDirection: Axis.vertical,
@@ -179,97 +173,115 @@ class _HomePageState extends State<HomePage> {
         itemBuilder: (BuildContext context, int position) {
           DocumentSnapshot documentSnapshot = filteredList[position];
           return Card(
-            margin:  const EdgeInsets.symmetric(vertical: 18, horizontal: 15),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20)),
+            margin: const EdgeInsets.symmetric(vertical: 18, horizontal: 15),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             color: Colors.transparent,
             elevation: 2.0,
-            child: SizedBox(height: MediaQuery.of(context).size.height/7,
-              child: InkWell(onTap: (){
-                Navigator.push(context, MaterialPageRoute(builder: (ctx){
-                  return UserDetails(documentSnapshot);
-                }));
-              },
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height / 7,
+              child: InkWell(
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (ctx) {
+                    return UserDetails(documentSnapshot);
+                  }));
+                },
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 15),
-
-                  child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,crossAxisAlignment: CrossAxisAlignment.center,
-                      children:[
-                         documentSnapshot["image"] != ""
-                        ? ClipRRect(
-                            borderRadius: BorderRadius.circular(100),
-                            child: Image.network(
-                              documentSnapshot["image"],
-                              width: 50,
-                              height: 50,
-                              fit: BoxFit.cover,
-                              loadingBuilder: (BuildContext context, Widget child,
-                                  ImageChunkEvent? loadingProgress) {
-                                if (loadingProgress == null) {
-                                  return child;
-                                }
-                                return Center(
-                                  child: CircularProgressIndicator(
-                                    value: loadingProgress.expectedTotalBytes !=
-                                            null
-                                        ? loadingProgress.cumulativeBytesLoaded /
-                                            (loadingProgress.expectedTotalBytes ??
-                                                1)
-                                        : null,
-                                  ),
-                                );
-                              },
-                              errorBuilder: (BuildContext context, Object exception,
-                                  StackTrace? stackTrace) {
-                                return Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const Icon(Icons.error, color: Colors.red, size: 20),
-                                    sh10,
-                                    TextCustom(text: 'Failed load', color: black),
-                                  ],
-                                );
-                              },
-                            ),
-                          )
-                        : const CircleAvatar(
-                            radius: 30,
-                            backgroundColor: Colors.grey,
-                            child: Icon(Icons.person), // Placeholder icon
-                          ),sw10,
-                  SizedBox(width: MediaQuery.of(context).size.width/12,
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.start,mainAxisAlignment: MainAxisAlignment.center,
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 2, horizontal: 15),
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        TextCustom(
-                            text: documentSnapshot["studentName"],
-                            color: black
+                        documentSnapshot["image"] != ""
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(100),
+                                child: Image.network(
+                                  documentSnapshot["image"],
+                                  width: 50,
+                                  height: 50,
+                                  fit: BoxFit.cover,
+                                  loadingBuilder: (BuildContext context,
+                                      Widget child,
+                                      ImageChunkEvent? loadingProgress) {
+                                    if (loadingProgress == null) {
+                                      return child;
+                                    }
+                                    return Center(
+                                      child: CircularProgressIndicator(
+                                        value: loadingProgress
+                                                    .expectedTotalBytes !=
+                                                null
+                                            ? loadingProgress
+                                                    .cumulativeBytesLoaded /
+                                                (loadingProgress
+                                                        .expectedTotalBytes ??
+                                                    1)
+                                            : null,
+                                      ),
+                                    );
+                                  },
+                                  errorBuilder: (BuildContext context,
+                                      Object exception,
+                                      StackTrace? stackTrace) {
+                                    return Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        const Icon(Icons.error,
+                                            color: Colors.red, size: 20),
+                                        sh10,
+                                        TextCustom(
+                                            text: 'Failed load', color: black),
+                                      ],
+                                    );
+                                  },
+                                ),
+                              )
+                            : const CircleAvatar(
+                                radius: 30,
+                                backgroundColor: Colors.grey,
+                                child: Icon(Icons.person), // Placeholder icon
+                              ),
+                        sw10,
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width / 12,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              TextCustom(
+                                  text: documentSnapshot["studentName"],
+                                  color: black),
+                              TextCustom(
+                                text: documentSnapshot["studyProgram"],
+                                color: Colors.black87,
+                              ),
+                            ],
+                          ),
                         ),
-                        TextCustom(text:documentSnapshot["studyProgram"],color: Colors.black87,),
-                      ],
-                    ),
-                  ),
                         const Spacer(),
-                   Column(mainAxisAlignment: MainAxisAlignment.center,crossAxisAlignment: CrossAxisAlignment.end,
-                     children: [
-                       GestureDetector(
-                           onTap: (){
-                             navigateToDetail('Edit User',
-                                 documentSnapshot: documentSnapshot);
-
-                           },
-                           child: const Icon(Icons.edit, color: Colors.black54)),
-
-                        sh20,
-                        GestureDetector(
-                            onTap: (){
-                              showDeleteDialog(context, documentSnapshot);
-                            },
-                            child: const Icon(Icons.delete, color: Colors.black54)),
-
-                     ],
-                   )
-                    ]
-                  ),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            GestureDetector(
+                                onTap: () {
+                                  navigateToDetail('Edit User',
+                                      documentSnapshot: documentSnapshot);
+                                },
+                                child: const Icon(Icons.edit,
+                                    color: Colors.black54)),
+                            sh20,
+                            GestureDetector(
+                                onTap: () {
+                                  showDeleteDialog(context, documentSnapshot);
+                                },
+                                child: const Icon(Icons.delete,
+                                    color: Colors.black54)),
+                          ],
+                        )
+                      ]),
                 ),
               ),
             ),
@@ -293,10 +305,12 @@ class _HomePageState extends State<HomePage> {
               Navigator.of(context).push(MaterialPageRoute(
                   builder: (context) => UserDetails(documentSnapshot)));
             },
-            child: ConstrainedBox(constraints:const BoxConstraints(maxWidth: 300,
-            // minWidth: MediaQuery.of(context).size.width /7,
-            ) ,
-               // Dynamic width for each item
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: 300,
+                // minWidth: MediaQuery.of(context).size.width /7,
+              ),
+              // Dynamic width for each item
               child: Card(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
@@ -305,7 +319,7 @@ class _HomePageState extends State<HomePage> {
                 elevation: 2.0,
                 child: Padding(
                   padding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.start,
@@ -313,20 +327,20 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       documentSnapshot["image"] != ""
                           ? CircleAvatar(
-                        radius: 40,
-                        backgroundColor: Colors.grey, // Fallback color
-                        backgroundImage:
-                        NetworkImage(documentSnapshot["image"]),
-                      )
+                              radius: 40,
+                              backgroundColor: Colors.grey, // Fallback color
+                              backgroundImage:
+                                  NetworkImage(documentSnapshot["image"]),
+                            )
                           : const CircleAvatar(
-                        radius: 40,
-                        backgroundColor: Colors.grey,
-                        child: Icon(Icons.person), // Placeholder icon
-                      ),
-                     sh10, // Spacing between avatar and name
+                              radius: 40,
+                              backgroundColor: Colors.grey,
+                              child: Icon(Icons.person), // Placeholder icon
+                            ),
+                      sh10, // Spacing between avatar and name
                       Text(
                         documentSnapshot["studentName"],
-                        style:  TextStyle(
+                        style: TextStyle(
                           color: black,
                           fontSize: 18,
                         ),
@@ -334,7 +348,7 @@ class _HomePageState extends State<HomePage> {
                         overflow: TextOverflow.ellipsis, // Avoid overflow
                         maxLines: 1, // Limit to 1 line
                       ),
-                     sh10, // Spacing between name and study program
+                      sh10, // Spacing between name and study program
                       Text(
                         documentSnapshot["studyProgram"],
                         style: TextStyle(
@@ -357,7 +371,8 @@ class _HomePageState extends State<HomePage> {
                             },
                           ),
                           IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.black54),
+                            icon:
+                                const Icon(Icons.delete, color: Colors.black54),
                             onPressed: () {
                               showDeleteDialog(context, documentSnapshot);
                             },
@@ -374,7 +389,6 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
 
   void showDeleteDialog(
       BuildContext context, DocumentSnapshot documentSnapshot) {
@@ -404,14 +418,13 @@ class _HomePageState extends State<HomePage> {
   }
 
   void navigateToDetail(String title, {required documentSnapshot}) async {
-   await Navigator.push(
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) =>
             UserDetailsEdit(documentSnapshot: documentSnapshot, title),
       ),
     );
-
   }
 
   void _delete(BuildContext context, {required String name}) async {

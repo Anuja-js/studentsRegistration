@@ -20,8 +20,6 @@ class _SignUpState extends State<SignUp> {
   final emailController = TextEditingController();
 
   final formkey = GlobalKey<FormState>();
-  bool obscure = true;
-  bool obscureemail = true;
   bool obscurepass = true;
   String email = "";
   String password = "";
@@ -51,38 +49,23 @@ class _SignUpState extends State<SignUp> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-               LogoImage(text: "SignUp"),
+                  LogoImage(text: "SignUp"),
                   const SizedBox(
                     height: 20,
                   ),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width / 3,
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 400),
                     child: TextFormField(
                       key: const ValueKey("fullname"),
                       style: const TextStyle(
                         fontSize: 15.0,
                         fontWeight: FontWeight.bold,
                       ),
-                      controller: nameController,obscureText: obscure,
+                      controller: nameController,
                       keyboardType: TextInputType.name,
                       decoration: InputDecoration(
-                        suffixIcon: IconButton(
-                            onPressed: () {
-                              setState(() {
-                                obscure = !obscure;
-                              });
-                            },
-                            icon: obscure
-                                ?  Icon(
-                                    Icons.visibility_outlined,
-                                    color: black,
-                                  )
-                                :  Icon(
-                                    Icons.visibility_off_outlined,
-                                    color: black,
-                                  )),
                         labelText: "Enter Your Name",
-                        labelStyle:  TextStyle(
+                        labelStyle: TextStyle(
                           color: black,
                         ),
                         border: const OutlineInputBorder(
@@ -112,8 +95,8 @@ class _SignUpState extends State<SignUp> {
                   const SizedBox(
                     height: 20,
                   ),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width / 3,
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 400),
                     child: TextFormField(
                       key: const ValueKey("email"),
                       style: const TextStyle(
@@ -121,26 +104,10 @@ class _SignUpState extends State<SignUp> {
                         fontWeight: FontWeight.bold,
                       ),
                       controller: emailController,
-                      obscureText: obscureemail,
                       keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
-                        suffixIcon: IconButton(
-                            onPressed: () {
-                              setState(() {
-                                obscureemail = !obscureemail;
-                              });
-                            },
-                            icon: obscureemail
-                                ?  Icon(
-                                    Icons.visibility_outlined,
-                                    color: black,
-                                  )
-                                :  Icon(
-                                    Icons.visibility_off_outlined,
-                                    color: black,
-                                  )),
                         labelText: "Enter Your Email",
-                        labelStyle:  TextStyle(
+                        labelStyle: TextStyle(
                           color: black,
                         ),
                         border: const OutlineInputBorder(
@@ -170,8 +137,8 @@ class _SignUpState extends State<SignUp> {
                   const SizedBox(
                     height: 30,
                   ),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width / 3,
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 400),
                     child: TextFormField(
                       key: const ValueKey("password"),
                       style: const TextStyle(
@@ -189,16 +156,16 @@ class _SignUpState extends State<SignUp> {
                               });
                             },
                             icon: obscurepass
-                                ?  Icon(
+                                ? Icon(
                                     Icons.visibility_outlined,
                                     color: black,
                                   )
-                                :  Icon(
+                                : Icon(
                                     Icons.visibility_off_outlined,
                                     color: black,
                                   )),
                         labelText: "Enter Your Password",
-                        labelStyle:  TextStyle(
+                        labelStyle: TextStyle(
                           color: black,
                         ),
                         border: const OutlineInputBorder(
@@ -226,9 +193,9 @@ class _SignUpState extends State<SignUp> {
                     ),
                   ),
                   const Spacer(),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width / 3,
-                    height: 50,
+                  ConstrainedBox(
+                    constraints:
+                        const BoxConstraints(maxWidth: 400, minWidth: 120),
                     child: ElevatedButton(
                       onPressed: () async {
                         if (formkey.currentState!.validate()) {
@@ -248,10 +215,8 @@ class _SignUpState extends State<SignUp> {
                         // checkLogIn(context);
                       },
                       style: ButtonStyle(
-                        backgroundColor:
-                            MaterialStateProperty.all(black),
-                        foregroundColor:
-                            MaterialStateProperty.all(white),
+                        backgroundColor: MaterialStateProperty.all(black),
+                        foregroundColor: MaterialStateProperty.all(white),
                         padding: MaterialStateProperty.all(
                           const EdgeInsets.symmetric(
                             vertical: 2,
@@ -260,26 +225,36 @@ class _SignUpState extends State<SignUp> {
                         ),
                       ),
                       child: TextCustom(
-                        text: "SignUp",color: white,
+                        text: "SignUp",
+                        color: white,
                       ),
                     ),
                   ),
                   sh10,
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                       TextCustom(text: "Do you have an account?",color: black,),
-                      TextButton(
-                          onPressed: () {
-                            Navigator.push(context,
-                                MaterialPageRoute(builder: (ctx) {
-                              return const LoginScreen();
-                            }));
-                          },
-                          child: TextCustom(text: "LogIn",color: Colors.indigoAccent,))
-                    ],
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 400),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        TextCustom(
+                          text: "Do you have an account?",
+                          color: black,
+                        ),
+                        TextButton(
+                            onPressed: () {
+                              Navigator.push(context,
+                                  MaterialPageRoute(builder: (ctx) {
+                                return const LoginScreen();
+                              }));
+                            },
+                            child: TextCustom(
+                              text: "LogIn",
+                              color: Colors.indigoAccent,
+                            ))
+                      ],
+                    ),
                   ),
-                 sh10,
+                  sh10,
                 ],
               ),
             ),

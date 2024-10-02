@@ -76,7 +76,7 @@ class UserDetailsEditState extends State<UserDetailsEdit> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: AppBar(centerTitle: true,
         title: Text(widget.appBarTitle,
             style: const TextStyle(color: Colors.white)),
         backgroundColor: Colors.black,
@@ -179,74 +179,103 @@ class UserDetailsEditState extends State<UserDetailsEdit> {
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: black,
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 15, horizontal: 20),
+                            padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                           ),
                           onPressed: () async {
                             if (formKey.currentState!.validate()) {
-                              load=true;
                               setState(() {
-
+                                load = true;
                               });
-                              DocumentReference documentReference = FirebaseFirestore
-                                  .instance
-                                  .collection("Students")
-                                  .doc(nameController.text);
 
-                              String imageUrl = "";
+                              try {
+                                // Create a reference to the Firestore document for the student
+                                DocumentReference documentReference = FirebaseFirestore.instance
+                                    .collection("Students")
+                                    .doc(nameController.text);
 
-                              if (imageBytes != null) {
-                                imageUrl = await uploadImage(imageBytes!);
-                              }
-                              Map<String, dynamic> student = {
-                                "studentName": nameController.text,
-                                "studentId": descriptionController.text,
-                                "studyProgram": qualificationController.text,
-                                "age": ageController.text,
-                                "phone": phoneController.text,
-                                "image": imageUrl
-                              };
+                                String imageUrl = "";
 
-                              if (widget.appBarTitle == "Edit User") {
-                                try {
+                                // Handle image uploading logic
+                                if (imageBytes != null) {
+                                  imageUrl = await uploadImage(imageBytes!);
+                                } else {
+                                  if (widget.appBarTitle == "Edit User") {
+                                    imageUrl = image!.toString();
+                                  }
+                                }
+
+                                // Data to be added/updated in Firestore
+                                Map<String, dynamic> student = {
+                                  "studentName": nameController.text,
+                                  "studentId": descriptionController.text,
+                                  "studyProgram": qualificationController.text,
+                                  "age": ageController.text,
+                                  "phone": phoneController.text,
+                                  "image": imageUrl
+                                };
+
+                                // If editing an existing user
+                                if (widget.appBarTitle == "Edit User") {
+                                  // First delete the old document with the previous student name
                                   await FirebaseFirestore.instance
                                       .collection("Students")
                                       .doc(widget.documentSnapshot["studentName"])
                                       .delete();
 
-                                  await documentReference.set(student).whenComplete(() {
-
-                                  });
-                                // ignore: empty_catches
-                                } catch (e) {
+                                  // Set the updated data
+                                  await documentReference.set(student).whenComplete(() {});
+                                } else {
+                                  // Add new student
+                                  await documentReference.set(student).whenComplete(() {});
                                 }
-                              } else {
-                                try {
-                                  await documentReference.set(student).whenComplete(() {
 
-                                  });
-                                } catch (e) {
-                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                      content: Text('Error saving student: $e')));
-                                }
-                              }
-                              ScaffoldMessenger.of(context).showSnackBar( SnackBar(duration: const Duration(seconds: 1),
-                                  content:widget.appBarTitle == 'Add Student' ?TextCustom(text: 'Student Added Succesfully',color: white,):TextCustom(color: white,text: 'Student updated Succesfully')
-                              ));
-                              load=false;
-                              setState(() {
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                  duration: const Duration(seconds: 1),
+                                  content: widget.appBarTitle == 'Add Student'
+                                      ? TextCustom(
+                                    text: 'Student Added Successfully',
+                                    color: white,
+                                  )
+                                      : TextCustom(
+                                    color: white,
+                                    text: 'Student Updated Successfully',
+                                  ),
+                                ));
 
-                              });
-                              Navigator.pushReplacement(context,
+                                setState(() {
+                                  load = false;
+                                });
+
+                                // Navigate back to the HomePage
+                                Navigator.pushReplacement(
+                                  context,
                                   MaterialPageRoute(builder: (ctx) {
                                     return const HomePage();
-                                  }));
+                                  }),
+                                );
+                              } catch (e) {
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                  content: Text('Error: $e'),
+                                ));
+                              } finally {
+                                setState(() {
+                                  load = false;
+                                });
+                              }
                             }
                           },
-                          child:load?const SizedBox(width:20,height:20,child: CircularProgressIndicator()): Text(widget.appBarTitle == 'Add Student'
-                              ? 'Save Student'
-                              : 'Update Student',style: TextStyle(color: white),),
+                          child: load
+                              ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(),
+                          )
+                              : Text(
+                            widget.appBarTitle == 'Add Student' ? 'Save Student' : 'Update Student',
+                            style: TextStyle(color: white),
+                          ),
                         ),
+
                       ],
                     ),
                   ),
